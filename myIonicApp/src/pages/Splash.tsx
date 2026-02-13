@@ -29,7 +29,7 @@ const Splash: React.FC = () => {
       <IonContent 
         fullscreen 
         className="splash-content"
-        style={{ '--background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+        style={{ '--background': 'linear-gradient(100deg, #5f0076 0%, #4a4a4a 100%)' }}
       >
         <div className="splash-container">
           <div className="logo-container">

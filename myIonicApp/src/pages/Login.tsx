@@ -68,7 +68,7 @@ const Login: React.FC<LoginPageProps> = () => {
             {/* Email Input */}
             <div className={`input-group ${isEmailTouched && !isEmailValid ? 'input-error' : ''}`}>
               <label className="floating-label">
-                <IonIcon icon={mailOutline} className="label-icon" />
+                <IonIcon icon={mailOutline} className="label-icons" />
                 Email Address
               </label>
               <div className="input-container">
@@ -94,7 +94,6 @@ const Login: React.FC<LoginPageProps> = () => {
               </div>
               {isEmailTouched && !isEmailValid && (
                 <IonText className="error-message">
-                  <IonIcon icon={mailOutline} className="error-icon" />
                   Please enter a valid email address
                 </IonText>
               )}
@@ -132,7 +131,6 @@ const Login: React.FC<LoginPageProps> = () => {
               </div>
               {isPasswordTouched && password.length > 0 && password.length < 6 && (
                 <IonText className="error-message">
-                  <IonIcon icon={lockClosedOutline} className="error-icon" />
                   Password must be at least 6 characters
                 </IonText>
               )}

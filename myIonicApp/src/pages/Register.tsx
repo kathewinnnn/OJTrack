@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonInput, IonText, IonIcon, IonLabel } from '@ionic/react';
+import { IonPage, IonContent, IonInput, IonText, IonIcon, IonLabel, IonLoading } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { mailOutline, lockClosedOutline, personOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline, arrowBackOutline, arrowForwardOutline, schoolOutline, briefcaseOutline } from 'ionicons/icons';
+import { mailOutline, lockClosedOutline, personOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline, arrowBackOutline, arrowForwardOutline, schoolOutline, briefcaseOutline, alertCircleOutline } from 'ionicons/icons';
 
 interface RegisterPageProps {}
 
 type UserRole = 'student' | 'supervisor' | null;
 
+// Username check flow: 'role' -> 'username' -> 'form'
+type RegistrationStep = 'role' | 'username' | 'form';
+
 const Register: React.FC<RegisterPageProps> = () => {
   const history = useHistory();
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
+  const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('role');
+  
+  // Username check states
+  const [username, setUsername] = useState<string>('');
+  const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   
   // Common fields
   const [fullName, setFullName] = useState<string>('');
@@ -43,9 +53,19 @@ const Register: React.FC<RegisterPageProps> = () => {
   const [isEmployeeIdTouched, setIsEmployeeIdTouched] = useState<boolean>(false);
   const [isDepartmentTouched, setIsDepartmentTouched] = useState<boolean>(false);
 
-  const validateEmail = (email: string): boolean => {
+  // Simulated username check - in a real app, this would call your backend API
+  const checkUsernameUnique = async (usernameToCheck: string): Promise<boolean> => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulated taken usernames for demo
+    const takenUsernames = ['admin', 'test', 'demo', 'user123', 'existing'];
+    return !takenUsernames.includes(usernameToCheck.toLowerCase());
+  };
+
+  const validateEmail = (emailStr: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(emailStr);
   };
 
   const validatePassword = (pwd: string): boolean => {
@@ -85,9 +105,57 @@ const Register: React.FC<RegisterPageProps> = () => {
     }
   };
 
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    setRegistrationStep('username');
+  };
+
+  const handleUsernameCheck = async () => {
+    if (!username || username.length < 3) {
+      setUsernameError('Username must be at least 3 characters');
+      return;
+    }
+    
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(username)) {
+      setUsernameError('Username can only contain letters, numbers, and underscores');
+      return;
+    }
+    
+    setIsCheckingUsername(true);
+    setUsernameError('');
+    
+    try {
+      const isUnique = await checkUsernameUnique(username);
+      if (isUnique) {
+        setUsernameAvailable(true);
+        setTimeout(() => {
+          setRegistrationStep('form');
+        }, 800);
+      } else {
+        setUsernameAvailable(false);
+        setUsernameError('This username is already taken');
+      }
+    } catch (error) {
+      setUsernameError('Error checking username. Please try again.');
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  const handleBackFromUsername = () => {
+    setSelectedRole(null);
+    setRegistrationStep('role');
+    setUsername('');
+    setUsernameError('');
+    setUsernameAvailable(null);
+  };
+
   const handleBack = () => {
-    if (selectedRole) {
-      setSelectedRole(null);
+    if (registrationStep === 'form') {
+      setRegistrationStep('username');
+    } else if (registrationStep === 'username') {
+      handleBackFromUsername();
     } else {
       history.push('/login');
     }
@@ -112,7 +180,7 @@ const Register: React.FC<RegisterPageProps> = () => {
         {/* Student Card */}
         <button
           className={`role-card ${selectedRole === 'student' ? 'role-selected' : ''}`}
-          onClick={() => setSelectedRole('student')}
+          onClick={() => handleRoleSelect('student')}
         >
           <div className="role-card-icon student-icon">
             <IonIcon icon={schoolOutline} />
@@ -127,7 +195,7 @@ const Register: React.FC<RegisterPageProps> = () => {
         {/* Supervisor Card */}
         <button
           className={`role-card ${selectedRole === 'supervisor' ? 'role-selected' : ''}`}
-          onClick={() => setSelectedRole('supervisor')}
+          onClick={() => handleRoleSelect('supervisor')}
         >
           <div className="role-card-icon supervisor-icon">
             <IonIcon icon={briefcaseOutline} />
@@ -151,6 +219,111 @@ const Register: React.FC<RegisterPageProps> = () => {
     </div>
   );
 
+  // Render username check form
+  const renderUsernameCheck = () => (
+    <div className="username-check-container">
+      {/* Back Button */}
+      <button className="back-button" onClick={handleBackFromUsername}>
+        <IonIcon icon={arrowBackOutline} />
+      </button>
+
+      {/* Header */}
+      <div className="register-header">
+        <IonText className="header-text">
+          <h1 className="title">Choose Username</h1>
+          <p className="subtitle">
+            Create a unique username for your{' '}
+            {selectedRole === 'student' ? 'student' : 'supervisor'} account
+          </p>
+        </IonText>
+      </div>
+
+      {/* Username Input */}
+      <div className="register-form">
+        <div className={`input-group ${usernameError ? 'input-error' : ''}`}>
+          <label className="floating-label">
+            <IonIcon icon={personOutline} className="label-icon" />
+            Username
+          </label>
+          <div className="input-container">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+                setUsername(value);
+                setUsernameError('');
+                setUsernameAvailable(null);
+              }}
+              className={`styled-input ${username && !usernameError && usernameAvailable === true ? 'input-valid' : ''} ${usernameError ? 'input-invalid' : ''}`}
+              placeholder="Choose a unique username"
+              disabled={isCheckingUsername}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !isCheckingUsername) {
+                  handleUsernameCheck();
+                }
+              }}
+            />
+            {username && usernameAvailable === true && (
+              <IonIcon icon={checkmarkCircleOutline} className="validation-icon success" />
+            )}
+            {usernameError && (
+              <IonIcon icon={alertCircleOutline} className="validation-icon error" />
+            )}
+          </div>
+          {usernameError && (
+            <IonText className="error-message">{usernameError}</IonText>
+          )}
+        </div>
+
+        {/* Username Tips */}
+        <div className="username-tips">
+          <IonText className="tips-title">Username must:</IonText>
+          <ul className="tips-list">
+            <li className={username.length >= 3 ? 'tip-done' : ''}>Be at least 3 characters</li>
+            <li className={/^[a-zA-Z0-9_]+$/.test(username) && username.length > 0 ? 'tip-done' : ''}>Contain only letters, numbers, and underscores</li>
+            <li className={usernameAvailable === true ? 'tip-done' : ''}>Be unique (not taken)</li>
+          </ul>
+        </div>
+
+        {/* Check Availability Button */}
+        <button
+          className={`register-button ${
+            username.length >= 3 && !usernameError && usernameAvailable === true ? 'button-ready' : ''
+          }`}
+          onClick={handleUsernameCheck}
+          disabled={username.length < 3 || isCheckingUsername}
+        >
+          {isCheckingUsername ? (
+            <IonLoading message="Checking..." spinner="circular" />
+          ) : usernameAvailable === true ? (
+            <>
+              <span>Username Available!</span>
+              <IonIcon icon={checkmarkCircleOutline} className="button-icon" />
+            </>
+          ) : (
+            <>
+              <span>Check Availability</span>
+              <IonIcon icon={arrowForwardOutline} className="button-icon" />
+            </>
+          )}
+        </button>
+
+        {/* Continue Button (shown when username is available) */}
+        {usernameAvailable === true && (
+          <button
+            className="continue-button"
+            onClick={() => setRegistrationStep('form')}
+          >
+            <IonText className="continue-text">
+              Continue to registration <IonIcon icon={arrowForwardOutline} />
+            </IonText>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   // Render registration form
   const renderForm = () => (
     <div className="register-container">
@@ -166,8 +339,23 @@ const Register: React.FC<RegisterPageProps> = () => {
           <h1 className="title">
             {selectedRole === 'student' ? 'Student Registration' : 'Supervisor Registration'}
           </h1>
-          <p className="subtitle">Create your account</p>
+          <p className="subtitle">Complete your account setup</p>
         </IonText>
+      </div>
+
+      {/* Username Display */}
+      <div className="username-display">
+        <IonIcon icon={personOutline} className="username-icon" />
+        <IonText className="username-value">@{username}</IonText>
+        <button 
+          className="change-username-btn"
+          onClick={() => {
+            setRegistrationStep('username');
+            setUsernameAvailable(null);
+          }}
+        >
+          Change
+        </button>
       </div>
 
       {/* Form */}
@@ -405,7 +593,9 @@ const Register: React.FC<RegisterPageProps> = () => {
   return (
     <IonPage>
       <IonContent fullscreen className="register-page">
-        {!selectedRole ? renderRoleSelection() : renderForm()}
+        {registrationStep === 'role' && renderRoleSelection()}
+        {registrationStep === 'username' && renderUsernameCheck()}
+        {registrationStep === 'form' && renderForm()}
       </IonContent>
     </IonPage>
   );

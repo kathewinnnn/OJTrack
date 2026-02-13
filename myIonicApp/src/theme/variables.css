@@ -44,7 +44,7 @@
 /* Login Page Styles */
 .login-page {
   --background: transparent !important;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(135deg, #cb87f3 0%, #764ba2 100%) !important;
 }
 
 .login-background {
@@ -62,7 +62,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(100deg, #5f0076 0%, #4a4a4a 100%);
 }
 
 .bg-shape {
@@ -186,6 +186,13 @@
 .label-icon {
   color: #6b7280;
   font-size: 18px;
+  padding-left: 6px;
+}
+
+.label-icons {
+  color: #6b7280;
+  font-size: 18px;
+  padding-left: 7px;
 }
 
 .input-container {
@@ -196,7 +203,7 @@
 
 .styled-input {
   width: 100%;
-  padding: 16px 48px 16px 48px;
+  padding: 16px 48px 16px 20px;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 1rem;
@@ -288,6 +295,7 @@ select.styled-input {
   font-size: 0.75rem;
   margin-top: 0.5rem;
   padding: 0.5rem;
+  padding-left: 5%;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 8px;
 }
@@ -321,7 +329,7 @@ select.styled-input {
   padding: 16px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(106, 121, 220);
   color: white;
   font-size: 1rem;
   font-weight: 600;
@@ -379,7 +387,7 @@ select.styled-input {
 /* Register Page Styles */
 .register-page {
   --background: transparent !important;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(100deg, #5f0076 0%, #4a4a4a 100%) !important;
 }
 
 .role-selection-container {
@@ -439,11 +447,11 @@ select.styled-input {
 }
 
 .role-card-icon.student-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: gray;
 }
 
 .role-card-icon.supervisor-icon {
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  background: gray;
 }
 
 .role-card-text {
@@ -527,6 +535,7 @@ select.styled-input {
   text-align: center;
   margin-bottom: 2rem;
   margin-top: 1rem;
+  padding-top: 7%;
 }
 
 .register-header .header-text {
@@ -557,7 +566,7 @@ select.styled-input {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  margin-top: 1rem;
+  margin-top: 1rem;;
 }
 
 .register-button:hover:not(:disabled) {
@@ -574,6 +583,158 @@ select.styled-input {
 
 .register-button.button-ready {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* Username Check Form Styles */
+.username-check-container {
+  position: relative;
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.username-check-container .register-header {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.username-check-container .register-form {
+  margin-top: 1.5rem;
+}
+
+.username-tips {
+  background: rgba(79, 70, 229, 0.05);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.tips-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tips-list li {
+  font-size: 0.8rem;
+  color: #6b7280;
+  padding: 0.35rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.tips-list li::before {
+  content: '○';
+  position: absolute;
+  left: 0;
+  color: #9ca3af;
+  transition: all 0.3s ease;
+}
+
+.tips-list li.tip-done {
+  color: #10b981;
+}
+
+.tips-list li.tip-done::before {
+  content: '✓';
+  color: #10b981;
+}
+
+.continue-button {
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed #10b981;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.05);
+  color: #10b981;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease;
+}
+
+.continue-button:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-style: solid;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.continue-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Username Display in Form */
+.username-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.username-display .username-icon {
+  color: #10b981;
+  font-size: 20px;
+}
+
+.username-display .username-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.change-username-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.change-username-btn:hover {
+  color: #374151;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.validation-icon.error {
+  color: #ef4444 !important;
 }
 
 @media (min-width: 768px) {
