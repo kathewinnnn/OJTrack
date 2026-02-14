@@ -1,38 +1,58 @@
 import React, { useState } from 'react';
 import { IonPage, IonContent, IonInput, IonText, IonImg, IonIcon, IonLabel } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { mailOutline, lockClosedOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
+import { personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
 
 interface LoginPageProps {}
 
 const Login: React.FC<LoginPageProps> = () => {
   const history = useHistory();
-  const [email, setEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [isEmailValid, setIsEmailValid] = useState<boolean>(true);
+  const [isUsernameValid, setIsUsernameValid] = useState<boolean>(true);
   const [isPasswordValid, setIsPasswordValid] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isEmailTouched, setIsEmailTouched] = useState<boolean>(false);
+  const [isUsernameTouched, setIsUsernameTouched] = useState<boolean>(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validateUsername = (name: string): boolean => {
+    const usernameRegex = /^[a-zA-Z0-9_]{3,}$/; // at least 3 chars, letters/numbers/underscore
+    return usernameRegex.test(name);
   };
 
+  const validatePassword = (pwd: string): boolean => {
+    const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/; // min 6, at least one letter, one number, one special char
+    return pwdRegex.test(pwd);
+  };
+
+  const [loginError, setLoginError] = useState<string>('');
+
   const handleLogin = () => {
-    setIsEmailTouched(true);
+    setIsUsernameTouched(true);
     setIsPasswordTouched(true);
     
-    const emailValid = validateEmail(email);
-    const passwordValid = password.length >= 6;
+    const usernameValid = validateUsername(username);
+    const passwordValid = validatePassword(password);
 
-    setIsEmailValid(emailValid);
+    setIsUsernameValid(usernameValid);
     setIsPasswordValid(passwordValid);
 
-    if (emailValid && passwordValid) {
-      console.log('Login successful:', { email, password });
-      history.push('/dashboard');
+    setLoginError('');
+
+    if (usernameValid && passwordValid) {
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const match = users.find((u: any) => u.username === username && u.password === password);
+      if (match) {
+        console.log('Login successful:', { username, role: match.role });
+        localStorage.setItem('currentUser', JSON.stringify(match));
+        if (match.role === 'supervisor') {
+          history.push('/supervisor-dashboard');
+        } else {
+          history.push('/dashboard');
+        }
+      } else {
+        setLoginError('Invalid username or password');
+      }
     }
   };
 
@@ -65,36 +85,36 @@ const Login: React.FC<LoginPageProps> = () => {
 
           {/* Form */}
           <div className="login-form">
-            {/* Email Input */}
-            <div className={`input-group ${isEmailTouched && !isEmailValid ? 'input-error' : ''}`}>
+            {/* Username Input */}
+            <div className={`input-group ${isUsernameTouched && !isUsernameValid ? 'input-error' : ''}`}>
               <label className="floating-label">
-                <IonIcon icon={mailOutline} className="label-icons" />
-                Email Address
+                <IonIcon icon={personOutline} className="label-icons" />
+                Username
               </label>
               <div className="input-container">
                 <input
-                  type="email"
-                  value={email}
+                  type="text"
+                  value={username}
                   onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (isEmailTouched) {
-                      setIsEmailValid(validateEmail(e.target.value));
+                    setUsername(e.target.value);
+                    if (isUsernameTouched) {
+                      setIsUsernameValid(validateUsername(e.target.value));
                     }
                   }}
-                  onFocus={() => setIsEmailTouched(true)}
+                  onFocus={() => setIsUsernameTouched(true)}
                   onBlur={() => {
-                    setIsEmailValid(validateEmail(email));
+                    setIsUsernameValid(validateUsername(username));
                   }}
-                  className={`styled-input ${email && validateEmail(email) ? 'input-valid' : ''} ${isEmailTouched && !isEmailValid ? 'input-invalid' : ''}`}
-                  placeholder="Enter your email"
+                  className={`styled-input ${username && validateUsername(username) ? 'input-valid' : ''} ${isUsernameTouched && !isUsernameValid ? 'input-invalid' : ''}`}
+                  placeholder="Enter your username"
                 />
-                {email && validateEmail(email) && (
+                {username && validateUsername(username) && (
                   <IonIcon icon={checkmarkCircleOutline} className="validation-icon success" />
                 )}
               </div>
-              {isEmailTouched && !isEmailValid && (
+              {isUsernameTouched && !isUsernameValid && (
                 <IonText className="error-message">
-                  Please enter a valid email address
+                  Username must be at least 3 characters and contain only letters, numbers, or _
                 </IonText>
               )}
             </div>
@@ -112,14 +132,14 @@ const Login: React.FC<LoginPageProps> = () => {
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (isPasswordTouched) {
-                      setIsPasswordValid(e.target.value.length >= 6);
+                      setIsPasswordValid(validatePassword(e.target.value));
                     }
                   }}
                   onFocus={() => setIsPasswordTouched(true)}
                   onBlur={() => {
-                    setIsPasswordValid(password.length >= 6);
+                    setIsPasswordValid(validatePassword(password));
                   }}
-                  className={`styled-input ${password.length >= 6 ? 'input-valid' : ''} ${isPasswordTouched && password.length > 0 && password.length < 6 ? 'input-invalid' : ''}`}
+                  className={`styled-input ${validatePassword(password) ? 'input-valid' : ''} ${isPasswordTouched && password.length > 0 && !validatePassword(password) ? 'input-invalid' : ''}`}
                   placeholder="Enter your password"
                 />
                 <button 
@@ -129,18 +149,24 @@ const Login: React.FC<LoginPageProps> = () => {
                   <IonIcon icon={showPassword ? eyeOffOutline : eyeOutline} />
                 </button>
               </div>
-              {isPasswordTouched && password.length > 0 && password.length < 6 && (
+              {isPasswordTouched && password.length > 0 && !validatePassword(password) && (
                 <IonText className="error-message">
-                  Password must be at least 6 characters
+                  Password must be at least 6 characters and include letters, numbers, and a special character
                 </IonText>
               )}
             </div>
+
+            {loginError && (
+              <IonText className="error-message" style={{ marginTop: 8 }}>
+                {loginError}
+              </IonText>
+            )}
 
             {/* Forgot Password */}
             <div className="forgot-password">
               <button 
                 className="forgot-link" 
-                onClick={() => console.log('Forgot password clicked')}
+                onClick={() => history.push('/forgot-password')}
               >
                 Forgot Password?
               </button>
@@ -148,9 +174,9 @@ const Login: React.FC<LoginPageProps> = () => {
 
             {/* Login Button */}
             <button
-              className={`login-button ${email && validateEmail(email) && password.length >= 6 ? 'button-ready' : ''}`}
+              className={`login-button ${username && validateUsername(username) && validatePassword(password) ? 'button-ready' : ''}`}
               onClick={handleLogin}
-              disabled={!email || !validateEmail(email) || password.length < 6}
+              disabled={!username || !validateUsername(username) || !validatePassword(password)}
             >
               <span>Log In</span>
               <IonIcon icon={arrowForwardOutline} className="button-icon" />

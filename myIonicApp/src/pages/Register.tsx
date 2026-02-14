@@ -69,7 +69,8 @@ const Register: React.FC<RegisterPageProps> = () => {
   };
 
   const validatePassword = (pwd: string): boolean => {
-    return pwd.length >= 6;
+    const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/; // min 6, at least one letter, one number, one special char
+    return pwdRegex.test(pwd);
   };
 
   const handleRegister = () => {
@@ -91,6 +92,14 @@ const Register: React.FC<RegisterPageProps> = () => {
       setIsYearTouched(true);
       const isValid = emailValid && passwordValid && confirmPasswordValid && studentId.length >= 5 && program.length >= 2 && year.length > 0;
       if (isValid) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const exists = users.find((u: any) => u.username === username);
+        if (exists) {
+          setUsernameError('Username is already registered');
+          return;
+        }
+        users.push({ username, password, role: selectedRole, fullName, email, studentId, program, year });
+        localStorage.setItem('users', JSON.stringify(users));
         console.log('Student registration successful');
         history.push('/login');
       }
@@ -99,6 +108,14 @@ const Register: React.FC<RegisterPageProps> = () => {
       setIsDepartmentTouched(true);
       const isValid = emailValid && passwordValid && confirmPasswordValid && employeeId.length >= 3 && department.length >= 2;
       if (isValid) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const exists = users.find((u: any) => u.username === username);
+        if (exists) {
+          setUsernameError('Username is already registered');
+          return;
+        }
+        users.push({ username, password, role: selectedRole, fullName, email, employeeId, department });
+        localStorage.setItem('users', JSON.stringify(users));
         console.log('Supervisor registration successful');
         history.push('/login');
       }
@@ -519,7 +536,7 @@ const Register: React.FC<RegisterPageProps> = () => {
               }}
               onFocus={() => setIsPasswordTouched(true)}
               onBlur={() => setIsPasswordValid(validatePassword(password))}
-              className={`styled-input ${password.length >= 6 ? 'input-valid' : ''} ${isPasswordTouched && password.length > 0 && password.length < 6 ? 'input-invalid' : ''}`}
+              className={`styled-input ${validatePassword(password) ? 'input-valid' : ''} ${isPasswordTouched && password.length > 0 && !validatePassword(password) ? 'input-invalid' : ''}`}
               placeholder="Create a password"
             />
             <button 
@@ -529,8 +546,8 @@ const Register: React.FC<RegisterPageProps> = () => {
               <IonIcon icon={showPassword ? eyeOffOutline : eyeOutline} />
             </button>
           </div>
-          {isPasswordTouched && password.length > 0 && password.length < 6 && (
-            <IonText className="error-message">Password must be at least 6 characters</IonText>
+          {isPasswordTouched && password.length > 0 && !validatePassword(password) && (
+            <IonText className="error-message">Password must be at least 6 characters and include letters, numbers, and a special character</IonText>
           )}
         </div>
 
@@ -552,7 +569,7 @@ const Register: React.FC<RegisterPageProps> = () => {
               }}
               onFocus={() => setIsConfirmPasswordTouched(true)}
               onBlur={() => setIsConfirmPasswordValid(confirmPassword === password && validatePassword(confirmPassword))}
-              className={`styled-input ${confirmPassword && confirmPassword === password ? 'input-valid' : ''} ${isConfirmPasswordTouched && confirmPassword.length > 0 && confirmPassword !== password ? 'input-invalid' : ''}`}
+              className={`styled-input ${confirmPassword && confirmPassword === password && validatePassword(confirmPassword) ? 'input-valid' : ''} ${isConfirmPasswordTouched && confirmPassword.length > 0 && (!validatePassword(confirmPassword) || confirmPassword !== password) ? 'input-invalid' : ''}`}
               placeholder="Confirm your password"
             />
             <button 
@@ -565,21 +582,24 @@ const Register: React.FC<RegisterPageProps> = () => {
           {isConfirmPasswordTouched && confirmPassword.length > 0 && confirmPassword !== password && (
             <IonText className="error-message">Passwords do not match</IonText>
           )}
+          {isConfirmPasswordTouched && confirmPassword.length > 0 && confirmPassword === password && !validatePassword(confirmPassword) && (
+            <IonText className="error-message">Password must be at least 6 characters and include letters, numbers, and a special character</IonText>
+          )}
         </div>
 
         {/* Register Button */}
         <button
           className={`register-button ${
             email && validateEmail(email) && 
-            password.length >= 6 && 
-            confirmPassword === password &&
+            validatePassword(password) && 
+            confirmPassword === password && validatePassword(confirmPassword) &&
             (selectedRole === 'student' ? (studentId.length >= 5 && program.length >= 2 && year.length > 0) : (employeeId.length >= 3 && department.length >= 2))
             ? 'button-ready' : ''}`}
           onClick={handleRegister}
           disabled={
             !email || !validateEmail(email) || 
-            password.length < 6 || 
-            confirmPassword !== password ||
+            !validatePassword(password) || 
+            confirmPassword !== password || !validatePassword(confirmPassword) ||
             (selectedRole === 'student' ? (studentId.length < 5 || program.length < 2 || year.length === 0) : (employeeId.length < 3 || department.length < 2))
           }
         >

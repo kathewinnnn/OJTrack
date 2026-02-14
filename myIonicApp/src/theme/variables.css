@@ -691,6 +691,106 @@ select.styled-input {
   gap: 0.5rem;
 }
 
+/* Forgot Password Page Styles */
+.forgot-page {
+  --background: transparent !important;
+ background: linear-gradient(100deg, #5f0076 0%, #4a4a4a 100%) !important;
+}
+
+.auth-container {
+  position: relative;
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+}
+
+.auth-header .title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-header .subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.auth-form {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.primary-button {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: rgb(106, 121, 220);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.primary-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.primary-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.primary-button.button-ready {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #10b981;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  padding-left: 5%;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+}
+
+.success-message ion-icon {
+  font-size: 18px;
+}
+
 /* Username Display in Form */
 .username-display {
   display: flex;
@@ -797,84 +897,6 @@ select.styled-input {
   transform: scale(1.05);
 }
 
-.dashboard-content {
-  --background: #f3f4f6;
-  --padding-top: 0 !important;
-}
-
-.dashboard-header ion-toolbar {
-  --min-height: 56px;
-  padding-top: 0;
-}
-
-.dashboard-container {
-  padding: 1rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.welcome-section {
-  margin-bottom: 1.5rem;
-}
-
-.welcome-title {
-  color: #1f2937;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 3% 0 0.25rem 0;
-}
-
-.welcome-subtitle {
-  color: #6b7280;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.progress-card {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1.5rem;
-}
-
-.progress-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.card-title {
-  color: #1f2937;
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.progress-percentage {
-  color: #4f46e5;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.progress-bar-container {
-  margin-bottom: 1.5rem;
-}
-
-.progress-bar-background {
-  background: #e5e7eb;
-  border-radius: 10px;
-  height: 12px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 10px;
-  height: 100%;
-  transition: width 0.5s ease;
-}
 
 .hours-stats {
   display: flex;
@@ -1164,9 +1186,6 @@ select.styled-input {
   transform: scale(1.1);
 }
 
-.dashboard-content {
-  padding-bottom: 80px;
-}
 
 @media (max-width: 480px) {
   .hours-stats {
@@ -1417,78 +1436,6 @@ select.styled-input {
   margin: 0;
 }
 
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.stat-card.total .stat-icon {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-  color: white;
-}
-
-.stat-card.submitted .stat-icon {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.stat-card.pending .stat-icon {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-}
-
-.stat-card.draft .stat-icon {
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  color: white;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-value {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
 
 /* Filter Tabs */
 .filter-tabs {

@@ -23,6 +23,14 @@ import DTR from './pages/DTR';
 import Reports from './pages/Reports';
 import Activity from './pages/Activity';
 import Account from './pages/Account';
+import ForgotPassword from './pages/ForgotPassword';
+import SupervisorDashboard from './pages/supervisor/SupervisorDashboard';
+import Profile from './pages/supervisor/Profile';
+import EditProfile from './pages/supervisor/EditProfile';
+import Trainees from './pages/supervisor/Trainees';
+import TraineeDetail from './pages/supervisor/TraineeDetail';
+import Attendance from './pages/supervisor/Attendance';
+import SupervisorReports from './pages/supervisor/Reports';
 
 const App: React.FC = () => (
   <IonApp>
@@ -36,6 +44,14 @@ const App: React.FC = () => (
         <Route exact path="/activity" component={Activity} />
         <Route exact path="/account" component={Account} />
         <Route exact path="/register" component={Register} />
+        <Route exact path="/forgot-password" component={ForgotPassword} />
+        <Route exact path="/supervisor-dashboard" component={SupervisorDashboard} />
+        <Route exact path="/profile" component={Profile} />
+        <Route exact path="/edit-profile" component={EditProfile} />
+        <Route exact path="/trainees" component={Trainees} />
+        <Route exact path="/trainee-detail/:id" component={TraineeDetail} />
+        <Route exact path="/attendance" component={Attendance} />
+        <Route exact path="/supervisor-reports" component={SupervisorReports} />
         <Redirect to="/" />
       </IonRouterOutlet>
     </IonReactRouter>
