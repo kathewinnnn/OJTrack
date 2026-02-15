@@ -40,18 +40,24 @@ const Login: React.FC<LoginPageProps> = () => {
     setLoginError('');
 
     if (usernameValid && passwordValid) {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const match = users.find((u: any) => u.username === username && u.password === password);
-      if (match) {
-        console.log('Login successful:', { username, role: match.role });
-        localStorage.setItem('currentUser', JSON.stringify(match));
-        if (match.role === 'supervisor') {
-          history.push('/supervisor-dashboard');
-        } else {
-          history.push('/dashboard');
-        }
+      if (username === 'admin' && password === 'admin123_') {
+        const adminUser = { username: 'admin', role: 'admin' };
+        localStorage.setItem('currentUser', JSON.stringify(adminUser));
+        history.push('/admin/dashboard');
       } else {
-        setLoginError('Invalid username or password');
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const match = users.find((u: any) => u.username === username && u.password === password);
+        if (match) {
+          console.log('Login successful:', { username, role: match.role });
+          localStorage.setItem('currentUser', JSON.stringify(match));
+          if (match.role === 'supervisor') {
+            history.push('/supervisor-dashboard');
+          } else {
+            history.push('/dashboard');
+          }
+        } else {
+          setLoginError('Invalid username or password');
+        }
       }
     }
   };

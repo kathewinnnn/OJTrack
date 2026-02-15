@@ -897,7 +897,6 @@ select.styled-input {
   transform: scale(1.05);
 }
 
-
 .hours-stats {
   display: flex;
   gap: 1rem;
@@ -1073,7 +1072,7 @@ select.styled-input {
   border-radius: 20px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30%;
+  margin-bottom: 7%;
 }
 
 .activity-list {
@@ -1186,7 +1185,6 @@ select.styled-input {
   transform: scale(1.1);
 }
 
-
 @media (max-width: 480px) {
   .hours-stats {
     flex-direction: column;
@@ -1195,215 +1193,6 @@ select.styled-input {
   .actions-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* DTR Page Styles */
-.dtr-content {
-  --background: #f3f4f6;
-  --padding-bottom: 80px !important;
-}
-
-.dtr-hero {
-  position: relative;
-  padding: 2rem 1rem;
-  border-radius: 0 0 24px 24px;
-  margin-bottom: -20px;
-  margin-top: 2%;
-  overflow: hidden;
-}
-
-.dtr-hero .hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.5;
-}
-
-.dtr-hero .hero-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.dtr-hero .hero-icon-wrapper {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-.dtr-hero .welcome-section {
-  flex: 1;
-}
-
-.dashboard-container .dtr-title {
-  color: #1f2937;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 3% 0 0.25rem 0;
-}
-
-.dashboard-container .dtr-subtitle {
-  color: #6b7280;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.dtr-container {
-  padding: 1rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.dtr-card {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1rem;
-}
-
-.dtr-card .card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.dtr-card .card-icon {
-  font-size: 24px;
-  color: #4f46e5;
-}
-
-.dtr-card .card-title {
-  color: #1f2937;
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.dtr-card .date-picker-container {
-  display: flex;
-  justify-content: center;
-}
-
-.dtr-card .date-picker {
-  --background: #f9fafb;
-  --border-radius: 12px;
-  border: 2px solid #e5e7eb;
-  padding: 1rem;
-}
-
-.time-inputs {
-  display: flex;
-  gap: 1rem;
-}
-
-.time-input-group {
-  flex: 1;
-}
-
-.time-input-group .input-label {
-  display: block;
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.time-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.time-input {
-  width: 100%;
-  padding: 12px 40px 12px 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: #f9fafb;
-  transition: all 0.3s ease;
-}
-
-.time-input:focus-within {
-  border-color: #4f46e5;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-}
-
-.time-input-wrapper .time-icon {
-  position: absolute;
-  right: 12px;
-  color: #9ca3af;
-  font-size: 20px;
-}
-
-.textarea-wrapper {
-  margin-top: 0.5rem;
-}
-
-.task-textarea {
-  --background: #f9fafb;
-  --border: 2px solid #e5e7eb;
-  --border-radius: 12px;
-  --padding: 1rem;
-  font-size: 1rem;
-  color: #1f2937;
-}
-
-.task-textarea:focus-within {
-  --border-color: #4f46e5;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-}
-
-.submit-section {
-  margin-top: 1.5rem;
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-}
-
-.submit-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.submit-btn.ready {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
 }
 
 /* Reports Page Styles */

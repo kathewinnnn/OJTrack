@@ -31,6 +31,12 @@ import Trainees from './pages/supervisor/Trainees';
 import TraineeDetail from './pages/supervisor/TraineeDetail';
 import Attendance from './pages/supervisor/Attendance';
 import SupervisorReports from './pages/supervisor/Reports';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminTrainees from './pages/admin/Trainees';
+import AdminSupervisors from './pages/admin/Supervisors';
+import AdminAttendance from './pages/admin/Attendance';
+import AdminReports from './pages/admin/Reports';
+import AdminProgress from './pages/admin/Progress';
 
 const App: React.FC = () => (
   <IonApp>
@@ -52,6 +58,12 @@ const App: React.FC = () => (
         <Route exact path="/trainee-detail/:id" component={TraineeDetail} />
         <Route exact path="/attendance" component={Attendance} />
         <Route exact path="/supervisor-reports" component={SupervisorReports} />
+        <Route exact path="/admin/dashboard" component={AdminDashboard} />
+        <Route exact path="/admin/trainees" component={AdminTrainees} />
+        <Route exact path="/admin/supervisors" component={AdminSupervisors} />
+        <Route exact path="/admin/attendance" component={AdminAttendance} />
+        <Route exact path="/admin/reports" component={AdminReports} />
+        <Route exact path="/admin/progress" component={AdminProgress} />
         <Redirect to="/" />
       </IonRouterOutlet>
     </IonReactRouter>
