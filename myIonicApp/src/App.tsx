@@ -31,12 +31,14 @@ import Trainees from './pages/supervisor/Trainees';
 import TraineeDetail from './pages/supervisor/TraineeDetail';
 import Attendance from './pages/supervisor/Attendance';
 import SupervisorReports from './pages/supervisor/Reports';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminTrainees from './pages/admin/Trainees';
-import AdminSupervisors from './pages/admin/Supervisors';
-import AdminAttendance from './pages/admin/Attendance';
-import AdminReports from './pages/admin/Reports';
-import AdminProgress from './pages/admin/Progress';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminTrainees from './pages/admin/AdminTrainees';
+import AdminAddSupervisor from './pages/admin/AdminAddSupervisor';
+import AdminSupervisors from './pages/admin/AdminSupervisors';
+import AdminAttendance from './pages/admin/AdminAttendance';
+import AdminReports from './pages/admin/AdminReports';
+import AdminProgress from './pages/admin/AdminProgress';
+import AdminAddTrainee from './pages/admin/AdminAddTrainee';  
 
 const App: React.FC = () => (
   <IonApp>
@@ -58,12 +60,14 @@ const App: React.FC = () => (
         <Route exact path="/trainee-detail/:id" component={TraineeDetail} />
         <Route exact path="/attendance" component={Attendance} />
         <Route exact path="/supervisor-reports" component={SupervisorReports} />
-        <Route exact path="/admin/dashboard" component={AdminDashboard} />
-        <Route exact path="/admin/trainees" component={AdminTrainees} />
-        <Route exact path="/admin/supervisors" component={AdminSupervisors} />
-        <Route exact path="/admin/attendance" component={AdminAttendance} />
-        <Route exact path="/admin/reports" component={AdminReports} />
-        <Route exact path="/admin/progress" component={AdminProgress} />
+        <Route exact path="/admin-dashboard" component={AdminDashboard} />
+        <Route exact path="/admin-trainees" component={AdminTrainees} />
+        <Route exact path="/admin-add-supervisor" component={AdminAddSupervisor} />
+        <Route exact path="/admin-supervisors" component={AdminSupervisors} />
+        <Route exact path="/admin-attendance" component={AdminAttendance} />
+        <Route exact path="/admin-reports" component={AdminReports} />
+        <Route exact path="/admin-progress" component={AdminProgress} />
+        <Route exact path="/admin-add-trainee" component={AdminAddTrainee} />
         <Redirect to="/" />
       </IonRouterOutlet>
     </IonReactRouter>
@@ -71,3 +75,9 @@ const App: React.FC = () => (
 );
 
 export default App;
+
+//changes i need to do:
+/**
+ * logout of user and supervisor are not redirecting to login
+ * buttons back to trainees and cancel in AdminAddTrainee.tsx is not automatically navigating back
+ */

@@ -1,18 +1,25 @@
 import React, { useEffect } from 'react';
-import { IonContent, IonPage } from '@ionic/react';
-import { useHistory } from 'react-router';
+import { IonContent, IonPage, useIonRouter } from '@ionic/react';
 
 const Splash: React.FC = () => {
-  const history = useHistory();
+  const router = useIonRouter();
 
   useEffect(() => {
+    console.log('Splash component mounted');
     // Inject styles
     const styleSheet = document.createElement('style');
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
 
     const timer = setTimeout(() => {
-      history.push('/login');
+      console.log('Splash timer fired, navigating to login');
+      // Try router.replace first, fallback to window.location.replace
+      try {
+        window.location.replace('/login');
+      }
+      catch (e) {
+        console.error('Navigation error:', e);
+      }
     }, 2500);
 
     return () => {
@@ -22,7 +29,7 @@ const Splash: React.FC = () => {
         styleSheet.parentNode.removeChild(styleSheet);
       }
     };
-  }, [history]);
+  }, []);
 
   return (
     <IonPage>
@@ -31,13 +38,13 @@ const Splash: React.FC = () => {
         className="splash-content"
         style={{ '--background': 'linear-gradient(100deg, #5f0076 0%, #4a4a4a 100%)' }}
       >
-        <div className="splash-container">
+        <div className="splash-container"><br /><br /><br />
           <div className="logo-container">
             <div className="logo-circle">
               <span className="logo-icon">📊</span>
             </div>
             <h1 className="app-title">OJTrack</h1>
-            <p className="app-tagline">Track Your Online Judge Progress</p>
+            <p className="app-tagline">Track Your OJT Progress</p>
           </div>
           
           <div className="loading-container">
@@ -210,3 +217,4 @@ const styles = `
     }
   }
 `;
+

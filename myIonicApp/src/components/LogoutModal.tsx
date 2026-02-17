@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { IonIcon, IonButton, IonText } from '@ionic/react';
-import { logOutOutline, closeOutline, checkmarkOutline, closeCircleOutline } from 'ionicons/icons';
+import { useIonRouter } from '@ionic/react';
+import './LogoutModal.css';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -15,94 +15,62 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const ionRouter = useIonRouter();
   const modalRef = useRef<HTMLDivElement>(null);
-  const confirmButtonRef = useRef<HTMLIonButtonElement>(null);
-  const cancelButtonRef = useRef<HTMLIonButtonElement>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
-  // Handle escape key
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        onCancel();
-      }
+      if (event.key === 'Escape' && isOpen) onCancel();
     },
     [isOpen, onCancel]
   );
 
-  // Handle backdrop click
   const handleBackdropClick = (event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) {
-      onCancel();
-    }
+    if (event.target === event.currentTarget) onCancel();
   };
 
-  // Focus management
+  useEffect(() => {
+    if (isLoading) {
+      // Navigate to login after animation completes
+      const timer = setTimeout(() => {
+        ionRouter.push('/login');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, ionRouter]);
+
   useEffect(() => {
     if (isOpen) {
-      // Store the currently focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
-
-      // Disable body scroll
       document.body.style.overflow = 'hidden';
-
-      // Focus the confirm button after a short delay for animation
       const timer = setTimeout(() => {
-        const button = confirmButtonRef.current as unknown as HTMLElement;
-        if (button) {
-          button.focus();
-        }
-      }, 100);
-
-      // Add escape key listener
+        (confirmButtonRef.current as unknown as HTMLElement)?.focus();
+      }, 150);
       document.addEventListener('keydown', handleKeyDown);
-
       return () => {
         clearTimeout(timer);
         document.removeEventListener('keydown', handleKeyDown);
       };
     } else {
-      // Re-enable body scroll
       document.body.style.overflow = '';
-
-      // Restore focus to the previous element
-      if (previousActiveElement.current) {
-        previousActiveElement.current.focus();
-      }
+      previousActiveElement.current?.focus();
     }
   }, [isOpen, handleKeyDown]);
 
-  // Handle confirm button click
-  const handleConfirm = () => {
-    if (!isLoading) {
-      onConfirm();
-    }
-  };
-
-  // Handle cancel button click
-  const handleCancel = () => {
-    if (!isLoading) {
-      onCancel();
-    }
-  };
-
-  // Handle keyboard navigation within modal
   const handleModalKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Tab') {
-      const focusableElements = modalRef.current?.querySelectorAll(
+      const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-
-      if (focusableElements && focusableElements.length > 0) {
-        const firstElement = focusableElements[0] as HTMLElement;
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-        if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault();
-          lastElement.focus();
-        } else if (!event.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault();
-          firstElement.focus();
+      if (focusable && focusable.length > 0) {
+        const first = focusable[0];
+        const last  = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
         }
       }
     }
@@ -112,70 +80,73 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
 
   return (
     <div
-      className="logout-modal-overlay"
+      className="lm-overlay"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="logout-modal-title"
-      aria-describedby="logout-modal-message"
+      aria-labelledby="lm-title"
+      aria-describedby="lm-message"
     >
       <div
         ref={modalRef}
-        className="logout-modal-container"
+        className="lm-container"
         onKeyDown={handleModalKeyDown}
       >
+        {/* Close × */}
+        <button
+          className="lm-close-btn"
+          onClick={onCancel}
+          disabled={isLoading}
+          aria-label="Close"
+        >
+          ✕
+        </button>
 
-        {/* Warning Icon */}
-        <div className="logout-modal-icon-wrapper">
-          <div className="logout-modal-icon">
-            <IonIcon icon={logOutOutline} />
+        {/* Icon */}
+        <div className="lm-icon-wrap">
+          <div className="lm-icon-ring lm-ring-outer" />
+          <div className="lm-icon-ring lm-ring-inner" />
+          <div className="lm-icon">
+            <span className="lm-icon-emoji">🚪</span>
           </div>
         </div>
 
-        {/* Modal Content */}
-        <div className="logout-modal-content">
-          <IonText className="logout-modal-title" id="logout-modal-title">
-            Log Out
-          </IonText>
-          <IonText
-            className="logout-modal-message"
-            id="logout-modal-message"
-          >
-            Are you sure you want to log out?
-          </IonText>
-        </div>
+        {/* Content */}
+        <h2 className="lm-title" id="lm-title">Log Out</h2>
+        <p className="lm-message" id="lm-message">
+          Are you sure you want to end your current session?
+        </p>
 
-        {/* Action Buttons */}
-        <div className="logout-modal-actions">
+        {/* Divider */}
+        <div className="lm-divider" />
+
+        {/* Buttons */}
+        <div className="lm-actions">
           <button
             ref={confirmButtonRef}
-            className="logout-modal-btn logout-modal-btn-confirm"
-            onClick={handleConfirm}
+            className="lm-btn lm-btn-confirm"
+            onClick={() => !isLoading && onConfirm()}
             disabled={isLoading}
-            fill="solid"
-            tabIndex={0}
           >
             {isLoading ? (
-              <span className="logout-modal-loading">
-                <span className="logout-modal-spinner"></span>
-                Logging out...
+              <span className="lm-loading-row">
+                <span className="lm-spinner" />
+                Logging out…
               </span>
             ) : (
               <>
-                <IonIcon icon={checkmarkOutline} slot="start" />
+                <span className="lm-btn-icon lm-btn-icon-confirm">✓</span>
                 Confirm
               </>
             )}
           </button>
+
           <button
-            ref={cancelButtonRef}
-            className="logout-modal-btn logout-modal-btn-cancel"
-            onClick={handleCancel}
+            className="lm-btn lm-btn-cancel"
+            onClick={() => !isLoading && onCancel()}
             disabled={isLoading}
-            fill="solid"
-            tabIndex={0}
           >
-            <IonIcon icon={closeCircleOutline} slot="start" />
+            <span className="lm-btn-icon lm-btn-icon-cancel">✕</span>
             Cancel
           </button>
         </div>

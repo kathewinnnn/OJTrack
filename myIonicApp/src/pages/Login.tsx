@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonInput, IonText, IonImg, IonIcon, IonLabel } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { IonPage, IonContent, IonInput, IonText, IonImg, IonIcon, IonLabel, useIonRouter } from '@ionic/react';
 import { personOutline, lockClosedOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline, arrowForwardOutline } from 'ionicons/icons';
 
 interface LoginPageProps {}
 
 const Login: React.FC<LoginPageProps> = () => {
-  const history = useHistory();
+  const ionRouter = useIonRouter();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isUsernameValid, setIsUsernameValid] = useState<boolean>(true);
@@ -43,7 +42,7 @@ const Login: React.FC<LoginPageProps> = () => {
       if (username === 'admin' && password === 'admin123_') {
         const adminUser = { username: 'admin', role: 'admin' };
         localStorage.setItem('currentUser', JSON.stringify(adminUser));
-        history.push('/admin/dashboard');
+        setTimeout(() => ionRouter.push('/admin-dashboard'), 0);
       } else {
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const match = users.find((u: any) => u.username === username && u.password === password);
@@ -51,9 +50,9 @@ const Login: React.FC<LoginPageProps> = () => {
           console.log('Login successful:', { username, role: match.role });
           localStorage.setItem('currentUser', JSON.stringify(match));
           if (match.role === 'supervisor') {
-            history.push('/supervisor-dashboard');
+            setTimeout(() => ionRouter.push('/supervisor-dashboard'), 0);
           } else {
-            history.push('/dashboard');
+            setTimeout(() => ionRouter.push('/dashboard'), 0);
           }
         } else {
           setLoginError('Invalid username or password');
@@ -63,12 +62,11 @@ const Login: React.FC<LoginPageProps> = () => {
   };
 
   const handleGoBack = () => {
-    history.push('/');
+    ionRouter.push('/');
   };
 
   return (
-    <IonPage>
-      <IonContent fullscreen className="login-page">
+    <div className="login-page">
         {/* Background */}
         <div className="login-background">
           <div className="bg-gradient"></div>
@@ -90,7 +88,7 @@ const Login: React.FC<LoginPageProps> = () => {
           </div>
 
           {/* Form */}
-          <div className="login-form">
+          <form className="login-form" onSubmit={e => { e.preventDefault(); handleLogin(); }}>
             {/* Username Input */}
             <div className={`input-group ${isUsernameTouched && !isUsernameValid ? 'input-error' : ''}`}>
               <label className="floating-label">
@@ -172,7 +170,7 @@ const Login: React.FC<LoginPageProps> = () => {
             <div className="forgot-password">
               <button 
                 className="forgot-link" 
-                onClick={() => history.push('/forgot-password')}
+                onClick={() => ionRouter.push('/forgot-password')}
               >
                 Forgot Password?
               </button>
@@ -180,8 +178,8 @@ const Login: React.FC<LoginPageProps> = () => {
 
             {/* Login Button */}
             <button
+              type="submit"
               className={`login-button ${username && validateUsername(username) && validatePassword(password) ? 'button-ready' : ''}`}
-              onClick={handleLogin}
               disabled={!username || !validateUsername(username) || !validatePassword(password)}
             >
               <span>Log In</span>
@@ -192,15 +190,14 @@ const Login: React.FC<LoginPageProps> = () => {
             <div className="register-section">
               <IonText className="register-text">
                 Don't have an account?{' '}
-                <span className="register-link" onClick={() => history.push('/register')}>
+                <span className="register-link" onClick={() => ionRouter.push('/register')}>
                   Sign Up
                 </span>
               </IonText>
             </div>
-          </div>
+          </form>
         </div>
-      </IonContent>
-    </IonPage>
+      </div>
   );
 };
 

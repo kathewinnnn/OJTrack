@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonHeader, IonToolbar, IonTitle, IonText, IonIcon, IonButton, IonList, IonItem, IonLabel, IonAvatar, IonBadge } from '@ionic/react';
+import { IonPage, IonContent, IonIcon, IonBadge } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { arrowBackOutline, personOutline, mailOutline, schoolOutline, calendarOutline, settingsOutline, helpCircleOutline, shieldCheckmarkOutline, logOutOutline, notificationsOutline, lockClosedOutline, documentTextOutline, createOutline, chevronForwardOutline } from 'ionicons/icons';
+import { personOutline, mailOutline, schoolOutline, calendarOutline, settingsOutline, helpCircleOutline, shieldCheckmarkOutline, logOutOutline, notificationsOutline, lockClosedOutline, documentTextOutline, createOutline, chevronForwardOutline } from 'ionicons/icons';
 import BottomNav from '../components/BottomNav';
 import LogoutModal from '../components/LogoutModal';
-
-interface AccountProps {}
 
 interface User {
   name: string;
@@ -14,10 +12,9 @@ interface User {
   program: string;
   year: string;
   studentId: string;
-  avatar?: string;
 }
 
-const Account: React.FC<AccountProps> = () => {
+const Account: React.FC = () => {
   const history = useHistory();
   const [user] = useState<User>({
     name: 'Katherine Guzman',
@@ -33,175 +30,126 @@ const Account: React.FC<AccountProps> = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const menuItems = [
-    { icon: settingsOutline, title: 'Account Settings', subtitle: 'Manage your account preferences', badge: null },
-    { icon: notificationsOutline, title: 'Notifications', subtitle: 'Configure alert settings', badge: notificationsEnabled ? 'On' : 'Off', badgeColor: notificationsEnabled ? 'success' : 'medium' },
-    { icon: lockClosedOutline, title: 'Privacy & Security', subtitle: 'Control your data and security', badge: null },
-    { icon: documentTextOutline, title: 'Terms of Service', subtitle: 'Read our policies', badge: null },
-    { icon: helpCircleOutline, title: 'Help & Support', subtitle: 'Get assistance', badge: null },
+    { icon: settingsOutline,       title: 'Account Settings',  subtitle: 'Manage your preferences',      badge: null, badgeColor: '' },
+    { icon: notificationsOutline,  title: 'Notifications',     subtitle: 'Configure alert settings',     badge: notificationsEnabled ? 'On' : 'Off', badgeColor: notificationsEnabled ? 'success' : 'medium' },
+    { icon: lockClosedOutline,     title: 'Privacy & Security',subtitle: 'Control your data',            badge: null, badgeColor: '' },
+    { icon: documentTextOutline,   title: 'Terms of Service',  subtitle: 'Read our policies',            badge: null, badgeColor: '' },
+    { icon: helpCircleOutline,     title: 'Help & Support',    subtitle: 'Get assistance',               badge: null, badgeColor: '' },
   ];
-
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
 
   const confirmLogout = () => {
     setIsLoggingOut(true);
-    // Simulate logout delay
     setTimeout(() => {
       setIsLoggingOut(false);
       setShowLogoutModal(false);
-      // Clear any stored auth data
       localStorage.removeItem('isLoggedIn');
       sessionStorage.clear();
-      // Redirect to login page
       history.push('/login');
-      // Replace current entry to prevent going back
       window.history.replaceState(null, '', '/login');
     }, 1000);
   };
 
-  const cancelLogout = () => {
-    setShowLogoutModal(false);
-  };
+  const details = [
+    { icon: mailOutline,           label: 'Email Address',    value: user.email },
+    { icon: schoolOutline,         label: 'Academic Program', value: user.program },
+    { icon: calendarOutline,       label: 'Year Level',       value: user.year },
+    { icon: shieldCheckmarkOutline,label: 'Student ID',       value: user.studentId },
+  ];
 
   return (
     <IonPage>
-      <IonContent fullscreen className="account-content" scrollY={!showLogoutModal}>
-        <div className="account-container">
-          {/* Profile Section */}
-          <div className="profile-section">
-            <div className="profile-cover"></div>
-            <div className="profile-info">
-              <div className="profile-avatar-wrapper">
-                <div className="profile-avatar">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} />
-                  ) : (
-                    <IonIcon icon={personOutline} />
-                  )}
+      <IonContent fullscreen className="acc-content" scrollY={!showLogoutModal}>
+        <div className="acc-container">
+
+          {/* Profile Hero */}
+          <div className="acc-profile-card">
+            <div className="acc-cover" />
+            <div className="acc-profile-body">
+              <div className="acc-avatar-wrap">
+                <div className="acc-avatar">
+                  <IonIcon icon={personOutline} />
                 </div>
-                <button className="edit-avatar-btn">
-                  <IonIcon icon={createOutline} />
-                </button>
+                <button className="acc-avatar-edit"><IonIcon icon={createOutline} /></button>
               </div>
-              <IonText className="profile-name">{user.name}</IonText>
-              <IonText className="profile-role">{user.role}</IonText>
-              <IonBadge className="program-badge">{user.program}</IonBadge>
+              <p className="acc-name">{user.name}</p>
+              <p className="acc-role">{user.role}</p>
+              <span className="acc-program-badge">{user.program}</span>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="quick-stats">
-            <div className="stat-item">
-              <IonText className="stat-value">{user.year}</IonText>
-              <IonText className="stat-label">Year Level</IonText>
+          <div className="acc-stats-card">
+            <div className="acc-stat">
+              <p className="acc-stat-val">{user.year}</p>
+              <p className="acc-stat-lbl">Year Level</p>
             </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <IonText className="stat-value">{user.studentId}</IonText>
-              <IonText className="stat-label">Student ID</IonText>
+            <div className="acc-stat-div" />
+            <div className="acc-stat">
+              <p className="acc-stat-val">{user.studentId}</p>
+              <p className="acc-stat-lbl">Student ID</p>
             </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <IonText className="stat-value">45</IonText>
-              <IonText className="stat-label">Days Active</IonText>
-            </div>
-          </div>
-
-          {/* User Details Card */}
-          <div className="account-card">
-            <div className="card-header">
-              <IonText className="card-title">Profile Information</IonText>
-              <button className="edit-btn">
-                <IonIcon icon={createOutline} />
-                <span>Edit</span>
-              </button>
-            </div>
-            
-            <div className="detail-list">
-              <div className="detail-item">
-                <div className="detail-icon">
-                  <IonIcon icon={mailOutline} />
-                </div>
-                <div className="detail-content">
-                  <IonText className="detail-label">Email Address</IonText>
-                  <IonText className="detail-value">{user.email}</IonText>
-                </div>
-              </div>
-              
-              <div className="detail-item">
-                <div className="detail-icon">
-                  <IonIcon icon={schoolOutline} />
-                </div>
-                <div className="detail-content">
-                  <IonText className="detail-label">Academic Program</IonText>
-                  <IonText className="detail-value">{user.program}</IonText>
-                </div>
-              </div>
-              
-              <div className="detail-item">
-                <div className="detail-icon">
-                  <IonIcon icon={calendarOutline} />
-                </div>
-                <div className="detail-content">
-                  <IonText className="detail-label">Year Level</IonText>
-                  <IonText className="detail-value">{user.year}</IonText>
-                </div>
-              </div>
-              
-              <div className="detail-item">
-                <div className="detail-icon">
-                  <IonIcon icon={shieldCheckmarkOutline} />
-                </div>
-                <div className="detail-content">
-                  <IonText className="detail-label">Student ID</IonText>
-                  <IonText className="detail-value">{user.studentId}</IonText>
-                </div>
-              </div>
+            <div className="acc-stat-div" />
+            <div className="acc-stat">
+              <p className="acc-stat-val">45</p>
+              <p className="acc-stat-lbl">Days Active</p>
             </div>
           </div>
 
-          {/* Menu Items */}
-          <div className="account-card">
-            <div className="card-header">
-              <IonText className="card-title">Settings & Support</IonText>
+          {/* Profile Info */}
+          <div className="acc-section-card">
+            <div className="acc-section-header">
+              <span className="acc-section-title">Profile Information</span>
+              <button className="acc-edit-btn"><IonIcon icon={createOutline} /> Edit</button>
             </div>
-            
-            <div className="menu-list">
-              {menuItems.map((item, index) => (
-                <button key={index} className="menu-item">
-                  <div className="menu-icon-wrapper">
-                    <IonIcon icon={item.icon} />
+            <div className="acc-detail-list">
+              {details.map((d, i) => (
+                <div key={i} className="acc-detail-item">
+                  <div className="acc-detail-icon"><IonIcon icon={d.icon} /></div>
+                  <div className="acc-detail-text">
+                    <p className="acc-detail-lbl">{d.label}</p>
+                    <p className="acc-detail-val">{d.value}</p>
                   </div>
-                  <div className="menu-content">
-                    <IonText className="menu-title">{item.title}</IonText>
-                    <IonText className="menu-subtitle">{item.subtitle}</IonText>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="acc-section-card">
+            <div className="acc-section-header">
+              <span className="acc-section-title">Settings & Support</span>
+            </div>
+            <div className="acc-menu-list">
+              {menuItems.map((item, i) => (
+                <button key={i} className="acc-menu-item">
+                  <div className="acc-menu-icon"><IonIcon icon={item.icon} /></div>
+                  <div className="acc-menu-text">
+                    <p className="acc-menu-title">{item.title}</p>
+                    <p className="acc-menu-sub">{item.subtitle}</p>
                   </div>
-                  {item.badge && (
-                    <IonBadge className="menu-badge" color={item.badgeColor}>{item.badge}</IonBadge>
-                  )}
-                  {!item.badge && (
-                    <IonIcon icon={chevronForwardOutline} className="menu-arrow" />
-                  )}
+                  {item.badge
+                    ? <IonBadge className="acc-menu-badge" color={item.badgeColor}>{item.badge}</IonBadge>
+                    : <IonIcon icon={chevronForwardOutline} className="acc-menu-arrow" />}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Logout Button */}
-          <button className="logout-btn" onClick={handleLogout}>
+          {/* Logout */}
+          <button className="acc-logout-btn" onClick={() => setShowLogoutModal(true)}>
             <IonIcon icon={logOutOutline} />
             <span>Log Out</span>
           </button>
+
         </div>
       </IonContent>
+
       <BottomNav activeTab="account" />
 
-      {/* Logout Confirmation Modal */}
       <LogoutModal
         isOpen={showLogoutModal}
         onConfirm={confirmLogout}
-        onCancel={cancelLogout}
+        onCancel={() => setShowLogoutModal(false)}
         isLoading={isLoggingOut}
       />
     </IonPage>

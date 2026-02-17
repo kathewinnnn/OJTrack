@@ -1,0 +1,80 @@
+/* Admin Add Supervisor Styles */
+.admin-add-supervisor-container {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(35,41,70,0.07);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+.admin-add-supervisor-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #232946;
+  margin-bottom: 1.5rem;
+}
+.admin-add-supervisor-form label {
+  font-weight: 500;
+  color: #0057ff;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.admin-add-supervisor-form input, .admin-add-supervisor-form select {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #bfc6e0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+.admin-add-supervisor-form button {
+  background: #0057ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-add-supervisor-form button:hover {
+  background: #003eaa;
+}
+
+.form-item {
+  margin-bottom: 1rem;
+}
+
+.form-item label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #5f0076;
+}
+
+.form-item input {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #bfc6e0;
+  font-size: 1rem;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #5f0076;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.7rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 1rem;
+}
+
+.submit-btn:hover {
+  background: #4a4a4a;
+}

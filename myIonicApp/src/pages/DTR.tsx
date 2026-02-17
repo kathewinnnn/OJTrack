@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { IonPage, IonContent, IonHeader, IonToolbar, IonTitle, IonText, IonIcon, IonInput, IonDatetime, IonTextarea, IonLabel, IonButton } from '@ionic/react';
-import { arrowBackOutline, calendarOutline, timeOutline, checkmarkCircleOutline, documentTextOutline, briefcaseOutline, addOutline } from 'ionicons/icons';
+import React, { useState } from 'react';
+import { IonPage, IonContent, IonText, IonIcon, IonInput, IonLabel } from '@ionic/react';
+import { calendarOutline, timeOutline, checkmarkCircleOutline, addOutline } from 'ionicons/icons';
 import BottomNav from '../components/BottomNav';
 import './DTR.css';
 
 interface DTRProps {}
 
 const DTR: React.FC<DTRProps> = () => {
-  const [selectedDate, setSelectedDate] = useState<string | string[]>(new Date().toISOString());
+  const [selectedDate] = useState<string>(new Date().toISOString());
   const [morningTimeIn, setMorningTimeIn] = useState<string>('');
   const [morningTimeOut, setMorningTimeOut] = useState<string>('');
   const [afternoonTimeIn, setAfternoonTimeIn] = useState<string>('');
@@ -17,312 +17,188 @@ const DTR: React.FC<DTRProps> = () => {
 
   const getCurrentTime = () => {
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   };
 
-  const handleMorningTimeIn = () => setMorningTimeIn(getCurrentTime());
-  const handleMorningTimeOut = () => setMorningTimeOut(getCurrentTime());
-  const handleAfternoonTimeIn = () => setAfternoonTimeIn(getCurrentTime());
-  const handleAfternoonTimeOut = () => setAfternoonTimeOut(getCurrentTime());
-
   const formatTime12Hour = (time: string) => {
-    if (!time) return 'Not set';
-    const [hours, minutes] = time.split(':').map(Number);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    if (!time) return '—';
+    const [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    return `${h % 12 || 12}:${m.toString().padStart(2, '0')} ${period}`;
   };
 
   const calculateTotalHours = () => {
-    const toMinutes = (time: string) => {
-      const [h, m] = time.split(':').map(Number);
-      return h * 60 + m;
-    };
-
-    let totalMinutes = 0;
-
-    if (morningTimeIn && morningTimeOut) {
-      const morningDiff = toMinutes(morningTimeOut) - toMinutes(morningTimeIn);
-      totalMinutes += morningDiff;
-    }
-
-    if (afternoonTimeIn && afternoonTimeOut) {
-      const afternoonDiff = toMinutes(afternoonTimeOut) - toMinutes(afternoonTimeIn);
-      totalMinutes += afternoonDiff;
-    }
-
-    if (totalMinutes === 0) return 'Not set';
-
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    return `${hours}h ${minutes}m`;
+    const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    let total = 0;
+    if (morningTimeIn && morningTimeOut) total += toMin(morningTimeOut) - toMin(morningTimeIn);
+    if (afternoonTimeIn && afternoonTimeOut) total += toMin(afternoonTimeOut) - toMin(afternoonTimeIn);
+    if (!total) return '—';
+    return `${Math.floor(total / 60)}h ${total % 60}m`;
   };
 
   const handleSubmit = () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      console.log('DTR Submitted:', {
-        date: selectedDate,
-        morningTimeIn,
-        morningTimeOut,
-        afternoonTimeIn,
-        afternoonTimeOut,
-        totalHours: calculateTotalHours()
-      });
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1000);
+    setTimeout(() => { setIsSubmitting(false); setIsSubmitted(true); }, 1000);
   };
 
-  const formatDate = (dateStr: string | string[]) => {
-    const date = new Date(dateStr as string);
-    return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  };
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const isFormComplete = morningTimeIn && morningTimeOut;
+  const isFormComplete = !!(morningTimeIn && morningTimeOut);
+
+  const TimeBlock = ({
+    label, value, onChange, onSetCurrent, minTime, maxTime, colorClass
+  }: {
+    label: string; value: string; onChange: (v: string) => void;
+    onSetCurrent: () => void; minTime: string; maxTime: string; colorClass: string;
+  }) => (
+    <div className={`dtr-time-block ${value ? 'dtr-time-block--done' : ''}`}>
+      <div className="dtr-time-block-header">
+        <div className={`dtr-time-indicator ${colorClass}`} />
+        <span className="dtr-time-block-label">{label}</span>
+        {value && <span className="dtr-time-check">✓</span>}
+      </div>
+      <div className="dtr-time-input-row">
+        <IonInput
+          type="time"
+          value={value}
+          onIonChange={(e) => onChange(e.detail.value!)}
+          className="dtr-ion-input"
+          min={minTime}
+          max={maxTime}
+          disabled={isSubmitted}
+        />
+        <button className="dtr-now-btn" onClick={onSetCurrent} disabled={isSubmitted}>
+          Now
+        </button>
+      </div>
+      {value && <p className="dtr-time-display">{formatTime12Hour(value)}</p>}
+    </div>
+  );
 
   return (
     <IonPage>
+      <IonContent fullscreen className="dtr-content">
 
-       <IonContent fullscreen className="dtr-content">
-                {/* Welcome Message */}
-                <div className="welcome-section">
-                  <IonText>
-                    <h1 className="dtr-title">Log Your Work</h1>
-                    <p className="dtr-subtitle">Track your activities and hours</p>
-                  </IonText>
-                </div>
+        {/* Header */}
+        <div className="dtr-hero">
+          <div className="dtr-hero-bg" />
+          <div className="dtr-hero-inner">
+            <h1 className="dtr-hero-title">Log Your Work</h1>
+            <p className="dtr-hero-sub">Track your daily hours accurately</p>
+          </div>
+        </div>
+
         <div className="dtr-container">
-          {/* Date Selection Card */}
-          <div className="dtr-card">
-            <div className="card-header">
-              <div className="card-icon-wrapper date-icon">
-                <IonIcon icon={calendarOutline} className="card-icon" />
-              </div>
-              <div className="card-title-wrapper">
-                <IonText className="card-title">Date</IonText>
-                <IonText className="card-subtitle">{formatDate(selectedDate)}</IonText>
-              </div>
+
+          {/* Date Card */}
+          <div className="dtr-card dtr-date-card">
+            <div className="dtr-card-icon-wrap dtr-icon-date">
+              <IonIcon icon={calendarOutline} />
+            </div>
+            <div>
+              <p className="dtr-card-label">Date</p>
+              <p className="dtr-card-value">{formatDate(selectedDate)}</p>
             </div>
           </div>
 
-          {/* Morning Shift Card */}
-          <div className="dtr-card">
-            <div className="card-header">
-              <div className="card-icon-wrapper time-icon">
-                <IonIcon icon={timeOutline} className="card-icon" />
+          {/* Morning Shift */}
+          <div className="dtr-shift-card">
+            <div className="dtr-shift-header">
+              <div className="dtr-card-icon-wrap dtr-icon-morning">
+                <IonIcon icon={timeOutline} />
               </div>
-              <div className="card-title-wrapper">
-                <IonText className="card-title">Morning Shift</IonText>
-                <IonText className="card-subtitle">7:00 AM - 12:00 PM</IonText>
+              <div>
+                <p className="dtr-card-label">Morning Shift</p>
+                <p className="dtr-card-value-small">7:00 AM – 12:00 PM</p>
+              </div>
+              <div className="dtr-shift-status">
+                {morningTimeIn && morningTimeOut
+                  ? <span className="dtr-shift-complete">Complete</span>
+                  : <span className="dtr-shift-pending">Pending</span>}
               </div>
             </div>
-
-            <div className="time-inputs">
-              <div className={`time-input-group ${morningTimeIn ? 'completed' : ''}`}>
-                <div className="input-label-wrapper">
-                  <div className="input-icon-wrapper in">
-                    <IonIcon icon={timeOutline} />
-                  </div>
-                  <IonLabel className="input-label">Time In</IonLabel>
-                  {morningTimeIn && <span className="status-badge in">✓</span>}
-                </div>
-                <div className="time-input-wrapper">
-                  <IonInput
-                    type="time"
-                    value={morningTimeIn}
-                    onIonChange={(e) => setMorningTimeIn(e.detail.value!)}
-                    className="time-input"
-                    placeholder="Select time"
-                    min="07:00"
-                    max="12:00"
-                    disabled={isSubmitted}
-                  />
-                  <button onClick={handleMorningTimeIn} className="set-current-btn" disabled={isSubmitted}>
-                    <IonIcon icon={timeOutline} />
-                    Set Current
-                  </button>
-                </div>
-              </div>
-
-              <div className="time-divider">
-                <span className="divider-line"></span>
-                <div className="divider-icon">
-                  <IonIcon icon={addOutline} />
-                </div>
-                <span className="divider-line"></span>
-              </div>
-
-              <div className={`time-input-group ${morningTimeOut ? 'completed' : ''}`}>
-                <div className="input-label-wrapper">
-                  <div className="input-icon-wrapper out">
-                    <IonIcon icon={timeOutline} />
-                  </div>
-                  <IonLabel className="input-label">Time Out</IonLabel>
-                  {morningTimeOut && <span className="status-badge out">✓</span>}
-                </div>
-                <div className="time-input-wrapper">
-                  <IonInput
-                    type="time"
-                    value={morningTimeOut}
-                    onIonChange={(e) => setMorningTimeOut(e.detail.value!)}
-                    className="time-input"
-                    placeholder="Select time"
-                    min="07:00"
-                    max="12:00"
-                    disabled={isSubmitted}
-                  />
-                  <button onClick={handleMorningTimeOut} className="set-current-btn" disabled={isSubmitted}>
-                    <IonIcon icon={timeOutline} />
-                    Set Current
-                  </button>
-                </div>
-              </div>
+            <div className="dtr-time-blocks">
+              <TimeBlock
+                label="Time In" value={morningTimeIn}
+                onChange={setMorningTimeIn} onSetCurrent={() => setMorningTimeIn(getCurrentTime())}
+                minTime="07:00" maxTime="12:00" colorClass="indicator-green"
+              />
+              <div className="dtr-blocks-sep"><IonIcon icon={addOutline} /></div>
+              <TimeBlock
+                label="Time Out" value={morningTimeOut}
+                onChange={setMorningTimeOut} onSetCurrent={() => setMorningTimeOut(getCurrentTime())}
+                minTime="07:00" maxTime="12:00" colorClass="indicator-amber"
+              />
             </div>
           </div>
 
-          {/* Afternoon Shift Card */}
-          <div className="dtr-card">
-            <div className="card-header">
-              <div className="card-icon-wrapper time-icon">
-                <IonIcon icon={timeOutline} className="card-icon" />
+          {/* Afternoon Shift */}
+          <div className="dtr-shift-card">
+            <div className="dtr-shift-header">
+              <div className="dtr-card-icon-wrap dtr-icon-afternoon">
+                <IonIcon icon={timeOutline} />
               </div>
-              <div className="card-title-wrapper">
-                <IonText className="card-title">Afternoon Shift</IonText>
-                <IonText className="card-subtitle">1:00 PM - 5:00 PM</IonText>
+              <div>
+                <p className="dtr-card-label">Afternoon Shift</p>
+                <p className="dtr-card-value-small">1:00 PM – 5:00 PM</p>
+              </div>
+              <div className="dtr-shift-status">
+                {afternoonTimeIn && afternoonTimeOut
+                  ? <span className="dtr-shift-complete">Complete</span>
+                  : <span className="dtr-shift-pending">Pending</span>}
               </div>
             </div>
-
-            <div className="time-inputs">
-              <div className={`time-input-group ${afternoonTimeIn ? 'completed' : ''}`}>
-                <div className="input-label-wrapper">
-                  <div className="input-icon-wrapper in">
-                    <IonIcon icon={timeOutline} />
-                  </div>
-                  <IonLabel className="input-label">Time In</IonLabel>
-                  {afternoonTimeIn && <span className="status-badge in">✓</span>}
-                </div>
-                <div className="time-input-wrapper">
-                  <IonInput
-                    type="time"
-                    value={afternoonTimeIn}
-                    onIonChange={(e) => setAfternoonTimeIn(e.detail.value!)}
-                    className="time-input"
-                    placeholder="Select time"
-                    min="13:00"
-                    max="17:00"
-                    disabled={isSubmitted}
-                  />
-                  <button onClick={handleAfternoonTimeIn} className="set-current-btn" disabled={isSubmitted}>
-                    <IonIcon icon={timeOutline} />
-                    Set Current
-                  </button>
-                </div>
-              </div>
-
-              <div className="time-divider">
-                <span className="divider-line"></span>
-                <div className="divider-icon">
-                  <IonIcon icon={addOutline} />
-                </div>
-                <span className="divider-line"></span>
-              </div>
-
-              <div className={`time-input-group ${afternoonTimeOut ? 'completed' : ''}`}>
-                <div className="input-label-wrapper">
-                  <div className="input-icon-wrapper out">
-                    <IonIcon icon={timeOutline} />
-                  </div>
-                  <IonLabel className="input-label">Time Out</IonLabel>
-                  {afternoonTimeOut && <span className="status-badge out">✓</span>}
-                </div>
-                <div className="time-input-wrapper">
-                  <IonInput
-                    type="time"
-                    value={afternoonTimeOut}
-                    onIonChange={(e) => setAfternoonTimeOut(e.detail.value!)}
-                    className="time-input"
-                    placeholder="Select time"
-                    min="13:00"
-                    max="17:00"
-                    disabled={isSubmitted}
-                  />
-                  <button onClick={handleAfternoonTimeOut} className="set-current-btn" disabled={isSubmitted}>
-                    <IonIcon icon={timeOutline} />
-                    Set Current
-                  </button>
-                </div>
-              </div>
+            <div className="dtr-time-blocks">
+              <TimeBlock
+                label="Time In" value={afternoonTimeIn}
+                onChange={setAfternoonTimeIn} onSetCurrent={() => setAfternoonTimeIn(getCurrentTime())}
+                minTime="13:00" maxTime="17:00" colorClass="indicator-green"
+              />
+              <div className="dtr-blocks-sep"><IonIcon icon={addOutline} /></div>
+              <TimeBlock
+                label="Time Out" value={afternoonTimeOut}
+                onChange={setAfternoonTimeOut} onSetCurrent={() => setAfternoonTimeOut(getCurrentTime())}
+                minTime="13:00" maxTime="17:00" colorClass="indicator-amber"
+              />
             </div>
           </div>
 
           {/* Summary Card */}
-          <div className="dtr-card summary-card">
-            <div className="summary-header">
-              <div className="summary-icon-wrapper">
-                <IonIcon icon={checkmarkCircleOutline} className="summary-icon" />
-              </div>
-              <IonText className="summary-title">Summary</IonText>
+          <div className="dtr-summary-card">
+            <div className="dtr-summary-header">
+              <IonIcon icon={checkmarkCircleOutline} className="dtr-summary-icon" />
+              <span className="dtr-summary-title">Summary</span>
             </div>
-            <div className="summary-items">
-              <div className={`summary-item ${morningTimeIn ? 'done' : ''}`}>
-                <div className="item-indicator"></div>
-                <div className="item-content">
-                  <span className="item-label">Morning Time In</span>
-                  <span className="item-value">{formatTime12Hour(morningTimeIn)}</span>
+            <div className="dtr-summary-rows">
+              {[
+                { label: 'Morning Time In', value: formatTime12Hour(morningTimeIn), done: !!morningTimeIn },
+                { label: 'Morning Time Out', value: formatTime12Hour(morningTimeOut), done: !!morningTimeOut },
+                { label: 'Afternoon Time In', value: formatTime12Hour(afternoonTimeIn), done: !!afternoonTimeIn },
+                { label: 'Afternoon Time Out', value: formatTime12Hour(afternoonTimeOut), done: !!afternoonTimeOut },
+                { label: 'Total Working Hours', value: calculateTotalHours(), done: isFormComplete },
+              ].map((row, i) => (
+                <div key={i} className={`dtr-summary-row ${row.done ? 'dtr-summary-row--done' : ''}`}>
+                  <div className="dtr-summary-dot" />
+                  <span className="dtr-summary-label">{row.label}</span>
+                  <span className="dtr-summary-value">{row.value}</span>
                 </div>
-              </div>
-              <div className={`summary-item ${morningTimeOut ? 'done' : ''}`}>
-                <div className="item-indicator"></div>
-                <div className="item-content">
-                  <span className="item-label">Morning Time Out</span>
-                  <span className="item-value">{formatTime12Hour(morningTimeOut)}</span>
-                </div>
-              </div>
-              <div className={`summary-item ${afternoonTimeIn ? 'done' : ''}`}>
-                <div className="item-indicator"></div>
-                <div className="item-content">
-                  <span className="item-label">Afternoon Time In</span>
-                  <span className="item-value">{formatTime12Hour(afternoonTimeIn)}</span>
-                </div>
-              </div>
-              <div className={`summary-item ${afternoonTimeOut ? 'done' : ''}`}>
-                <div className="item-indicator"></div>
-                <div className="item-content">
-                  <span className="item-label">Afternoon Time Out</span>
-                  <span className="item-value">{formatTime12Hour(afternoonTimeOut)}</span>
-                </div>
-              </div>
-              <div className={`summary-item ${isFormComplete ? 'done' : ''}`}>
-                <div className="item-indicator"></div>
-                <div className="item-content">
-                  <span className="item-label">Total Working Hours</span>
-                  <span className="item-value">{calculateTotalHours()}</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="submit-section">
-            <button
-              className={`submit-btn ${isFormComplete && !isSubmitted ? 'ready' : ''} ${isSubmitting ? 'submitting' : ''}`}
-              onClick={handleSubmit}
-              disabled={!isFormComplete || isSubmitting || isSubmitted}
-            >
-              <div className="btn-content">
-                <IonIcon icon={isSubmitting ? '' : checkmarkCircleOutline} className={isSubmitting ? 'spinner' : ''} />
-                <span>{isSubmitted ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit DTR'}</span>
-              </div>
-              {isFormComplete && !isSubmitting && <div className="btn-glow"></div>}
-            </button>
-          </div>
+          {/* Submit */}
+          <button
+            className={`dtr-submit-btn ${isFormComplete && !isSubmitted ? 'dtr-submit-ready' : ''} ${isSubmitting ? 'dtr-submit-loading' : ''} ${isSubmitted ? 'dtr-submit-done' : ''}`}
+            onClick={handleSubmit}
+            disabled={!isFormComplete || isSubmitting || isSubmitted}
+          >
+            <IonIcon icon={checkmarkCircleOutline} />
+            <span>{isSubmitted ? 'Submitted!' : isSubmitting ? 'Submitting…' : 'Submit DTR'}</span>
+          </button>
+
         </div>
       </IonContent>
-
       <BottomNav activeTab="dtr" />
     </IonPage>
   );

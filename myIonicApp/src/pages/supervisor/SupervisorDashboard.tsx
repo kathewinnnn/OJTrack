@@ -1,104 +1,127 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonText, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon } from '@ionic/react';
-import { peopleOutline, documentTextOutline, personOutline, timeOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonText, IonIcon } from '@ionic/react';
+import { peopleOutline, documentTextOutline, personOutline, timeOutline, notificationsOutline, settingsOutline, trendingUpOutline } from 'ionicons/icons';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
 
-interface SupervisorDashboardProps {}
-
-const SupervisorDashboard: React.FC<SupervisorDashboardProps> = () => {
-  const [assignedTrainees] = useState<number>(25);
-  const [pendingReports] = useState<number>(5);
-  const [presentTrainees] = useState<number>(18);
-  const [averageProgress] = useState<number>(75); // Percentage
+const SupervisorDashboard: React.FC = () => {
+  const [assignedTrainees] = useState(25);
+  const [pendingReports] = useState(5);
+  const [presentTrainees] = useState(18);
+  const [averageProgress] = useState(75);
 
   return (
     <IonPage>
-      <IonContent fullscreen className="dashboard-content">
-        <div className="dashboard-container">
-          {/* Welcome Message */}
-          <div className="welcome-section">
-            <IonText>
-              <h1 className="welcome-title">Welcome, Supervisor!</h1>
-              <p className="welcome-subtitle">Here's your supervision overview</p>
-            </IonText>
-          </div>
+      <IonContent fullscreen className="sv-content">
 
-          {/* Overview Statistics Cards */}
-          <div className="stats-grid">
-            <div className="stat-card total">
-              <div className="stat-icon">
-                <IonIcon icon={peopleOutline} />
-              </div>
-              <div className="stat-info">
-                <IonText className="stat-value">{assignedTrainees}</IonText>
-                <IonText className="stat-label">Total students under supervision</IonText>
+        {/* Hero */}
+        <div className="sv-hero">
+          <div className="sv-hero-bg" />
+          <div className="sv-hero-inner">
+            <div className="sv-hero-top">
+              <div className="sv-avatar">KM</div>
+              <div className="sv-hero-actions">
+                <button className="sv-icon-btn"><IonIcon icon={notificationsOutline} /></button>
+                <button className="sv-icon-btn"><IonIcon icon={settingsOutline} /></button>
               </div>
             </div>
-
-            <div className="stat-card pending">
-              <div className="stat-icon">
-                <IonIcon icon={documentTextOutline} />
-              </div>
-              <div className="stat-info">
-                <IonText className="stat-value">{pendingReports}</IonText>
-                <IonText className="stat-label">Reports waiting approval</IonText>
-              </div>
-            </div>
-
-            <div className="stat-card submitted">
-              <div className="stat-icon">
-                <IonIcon icon={personOutline} />
-              </div>
-              <div className="stat-info">
-                <IonText className="stat-value">{presentTrainees}</IonText>
-                <IonText className="stat-label">Currently logged-in trainees</IonText>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Overview */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Progress Overview</h2>
-              </IonText>
-              <IonText className="progress-percentage">
-                {averageProgress}%
-              </IonText>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="progress-bar-container">
-              <div className="progress-bar-background">
-                <div
-                  className="progress-bar-fill"
-                  style={{ width: `${averageProgress}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <IonText className="progress-label">Average trainee progress</IonText>
-          </div>
-
-          {/* Quick System Summary */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title" style={{marginBottom: '5px'}}>
-                  <IonIcon icon={timeOutline} style={{marginRight: '5px'}} />
-                  Quick System Summary
-                </h2>
-              </IonText>
-            </div>
-            <IonText>
-              <p>Total active sessions: {presentTrainees}</p>
-              <p>Reports submitted this week: 12</p>
-            </IonText>
+            <p className="sv-hero-sub">Welcome back 👋</p>
+            <h1 className="sv-hero-name">Dr. Kath Montenegro</h1>
+            <span className="sv-role-badge">Senior IT Supervisor</span>
           </div>
         </div>
-      </IonContent>
 
+        <div className="sv-body">
+
+          {/* Stats Row */}
+          <div className="sv-stats-grid">
+            <div className="sv-stat-card sv-stat-purple">
+              <div className="sv-stat-icon-wrap">
+                <IonIcon icon={peopleOutline} />
+              </div>
+              <p className="sv-stat-num">{assignedTrainees}</p>
+              <p className="sv-stat-lbl">Total Trainees</p>
+            </div>
+            <div className="sv-stat-card sv-stat-amber">
+              <div className="sv-stat-icon-wrap">
+                <IonIcon icon={documentTextOutline} />
+              </div>
+              <p className="sv-stat-num">{pendingReports}</p>
+              <p className="sv-stat-lbl">Pending Reports</p>
+            </div>
+            <div className="sv-stat-card sv-stat-green">
+              <div className="sv-stat-icon-wrap">
+                <IonIcon icon={personOutline} />
+              </div>
+              <p className="sv-stat-num">{presentTrainees}</p>
+              <p className="sv-stat-lbl">Logged In</p>
+            </div>
+          </div>
+
+          {/* Progress Card */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Average Progress</p>
+                <h2 className="sv-card-title">Trainee Overview</h2>
+              </div>
+              <span className="sv-pct-badge">{averageProgress}%</span>
+            </div>
+            <div className="sv-progress-track">
+              <div className="sv-progress-fill" style={{ width: `${averageProgress}%` }}>
+                <div className="sv-progress-glow" />
+              </div>
+            </div>
+            <div className="sv-progress-legend">
+              <span className="sv-legend-item sv-legend-done">
+                <span className="sv-legend-dot" style={{ background: 'var(--c-purple)' }} />
+                Completed: {averageProgress}%
+              </span>
+              <span className="sv-legend-item">
+                <span className="sv-legend-dot" style={{ background: 'var(--c-border)' }} />
+                Remaining: {100 - averageProgress}%
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Summary */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Today</p>
+                <h2 className="sv-card-title">Quick Summary</h2>
+              </div>
+              <div className="sv-card-icon-wrap sv-icon-time">
+                <IonIcon icon={timeOutline} />
+              </div>
+            </div>
+            <div className="sv-summary-rows">
+              <div className="sv-summary-row">
+                <div className="sv-summary-row-left">
+                  <div className="sv-summary-dot sv-dot-green" />
+                  <span className="sv-summary-label">Active sessions today</span>
+                </div>
+                <span className="sv-summary-val">{presentTrainees}</span>
+              </div>
+              <div className="sv-summary-row">
+                <div className="sv-summary-row-left">
+                  <div className="sv-summary-dot sv-dot-purple" />
+                  <span className="sv-summary-label">Reports submitted this week</span>
+                </div>
+                <span className="sv-summary-val">12</span>
+              </div>
+              <div className="sv-summary-row">
+                <div className="sv-summary-row-left">
+                  <div className="sv-summary-dot sv-dot-amber" />
+                  <span className="sv-summary-label">Awaiting your review</span>
+                </div>
+                <span className="sv-summary-val sv-val-amber">{pendingReports}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </IonContent>
       <SupervisorBottomNav activeTab="home" />
     </IonPage>
   );

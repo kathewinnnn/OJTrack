@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonHeader, IonToolbar, IonTitle, IonText, IonIcon, IonButton, IonList, IonItem, IonLabel, IonInput } from '@ionic/react';
-import { arrowBackOutline, timeOutline, logInOutline, logOutOutline, documentTextOutline, cloudUploadOutline, calendarOutline, searchOutline, closeOutline, filterOutline, trendingUpOutline, peopleOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import { timeOutline, logInOutline, logOutOutline, documentTextOutline, cloudUploadOutline, calendarOutline, searchOutline, closeOutline } from 'ionicons/icons';
 import BottomNav from '../components/BottomNav';
-
-interface ActivityProps {}
 
 interface Activity {
   id: number;
@@ -15,213 +13,152 @@ interface Activity {
   category: string;
 }
 
-const Activity: React.FC<ActivityProps> = () => {
+const Activity: React.FC = () => {
   const [searchText, setSearchText] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  
+  const [selectedFilter, setSelectedFilter] = useState('all');
+
   const activities: Activity[] = [
-    { id: 1, type: 'time-in', title: 'Time In', description: 'Started work for the day - Morning check-in', time: '8:00 AM', date: 'Today', category: 'Time Record' },
-    { id: 2, type: 'dtr', title: 'DTR Submitted', description: 'Daily Time Record for today - All entries verified', time: '5:30 PM', date: 'Today', category: 'DTR' },
-    { id: 3, type: 'time-out', title: 'Time Out', description: 'Ended work for the day - Productive day completed', time: '5:30 PM', date: 'Today', category: 'Time Record' },
-    { id: 4, type: 'report', title: 'Weekly Report Uploaded', description: 'Week 3 Progress Report - Submitted for review', time: '10:00 AM', date: 'Yesterday', category: 'Reports' },
-    { id: 5, type: 'time-in', title: 'Time In', description: 'Started work for the day -迟到 check-in', time: '8:15 AM', date: 'Yesterday', category: 'Time Record' },
-    { id: 6, type: 'time-out', title: 'Time Out', description: 'Ended work for the day - Early departure', time: '5:00 PM', date: 'Yesterday', category: 'Time Record' },
-    { id: 7, type: 'report', title: 'Monthly Report Created', description: 'January Monthly Summary - Draft saved', time: '2:00 PM', date: 'Jan 31, 2025', category: 'Reports' },
-    { id: 8, type: 'dtr', title: 'DTR Submitted', description: 'Daily Time Record for Jan 31', time: '5:30 PM', date: 'Jan 31, 2025', category: 'DTR' },
+    { id: 1, type: 'time-in',  title: 'Time In',              description: 'Started work for the day – Morning check-in',           time: '8:00 AM',  date: 'Today',        category: 'Time Record' },
+    { id: 2, type: 'dtr',      title: 'DTR Submitted',         description: 'Daily Time Record for today – All entries verified',    time: '5:30 PM',  date: 'Today',        category: 'DTR' },
+    { id: 3, type: 'time-out', title: 'Time Out',              description: 'Ended work for the day – Productive day completed',     time: '5:30 PM',  date: 'Today',        category: 'Time Record' },
+    { id: 4, type: 'report',   title: 'Weekly Report Uploaded',description: 'Week 3 Progress Report – Submitted for review',        time: '10:00 AM', date: 'Yesterday',    category: 'Reports' },
+    { id: 5, type: 'time-in',  title: 'Time In',              description: 'Started work for the day',                             time: '8:15 AM',  date: 'Yesterday',    category: 'Time Record' },
+    { id: 6, type: 'time-out', title: 'Time Out',              description: 'Ended work for the day – Early departure',             time: '5:00 PM',  date: 'Yesterday',    category: 'Time Record' },
+    { id: 7, type: 'report',   title: 'Monthly Report Created',description: 'January Monthly Summary – Draft saved',               time: '2:00 PM',  date: 'Jan 31, 2025', category: 'Reports' },
+    { id: 8, type: 'dtr',      title: 'DTR Submitted',         description: 'Daily Time Record for Jan 31',                        time: '5:30 PM',  date: 'Jan 31, 2025', category: 'DTR' },
   ];
 
-  const stats = {
-    totalHours: 320,
-    daysWorked: 45,
-    avgHoursPerDay: 7.1,
-    streak: 12,
+  const typeConfig: Record<string, { icon: string; color: string; bg: string; label: string }> = {
+    'time-in':  { icon: logInOutline,        color: '#34d399', bg: 'rgba(52,211,153,0.15)',  label: 'Time In' },
+    'time-out': { icon: logOutOutline,       color: '#f87171', bg: 'rgba(248,113,113,0.15)', label: 'Time Out' },
+    'dtr':      { icon: documentTextOutline, color: '#a78bfa', bg: 'rgba(167,139,250,0.15)', label: 'DTR' },
+    'report':   { icon: cloudUploadOutline,  color: '#60a5fa', bg: 'rgba(96,165,250,0.15)',  label: 'Report' },
   };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'time-in': return logInOutline;
-      case 'time-out': return logOutOutline;
-      case 'dtr': return documentTextOutline;
-      case 'report': return cloudUploadOutline;
-      default: return timeOutline;
-    }
-  };
+  const filters = [
+    { key: 'all', label: 'All' },
+    { key: 'time-in', label: 'Time In' },
+    { key: 'time-out', label: 'Time Out' },
+    { key: 'dtr', label: 'DTR' },
+    { key: 'report', label: 'Reports' },
+  ];
 
-  const getActivityBgColor = (type: string) => {
-    switch (type) {
-      case 'time-in': return 'rgba(16, 185, 129, 0.1)';
-      case 'time-out': return 'rgba(239, 68, 68, 0.1)';
-      case 'dtr': return 'rgba(102, 126, 234, 0.1)';
-      case 'report': return 'rgba(14, 165, 233, 0.1)';
-      default: return 'rgba(107, 114, 128, 0.1)';
-    }
-  };
-
-  const getActivityIconColor = (type: string) => {
-    switch (type) {
-      case 'time-in': return '#10b981';
-      case 'time-out': return '#ef4444';
-      case 'dtr': return '#667eea';
-      case 'report': return '#0ea5e9';
-      default: return '#6b7280';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'time-in': return 'Time In';
-      case 'time-out': return 'Time Out';
-      case 'dtr': return 'DTR';
-      case 'report': return 'Report';
-      default: return 'Activity';
-    }
-  };
-
-  const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.title.toLowerCase().includes(searchText.toLowerCase()) ||
-                         activity.description.toLowerCase().includes(searchText.toLowerCase());
-    const matchesFilter = selectedFilter === 'all' || activity.type === selectedFilter;
-    return matchesSearch && matchesFilter;
+  const filtered = activities.filter(a => {
+    const q = searchText.toLowerCase();
+    const match = a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q);
+    const fmatch = selectedFilter === 'all' || a.type === selectedFilter;
+    return match && fmatch;
   });
 
   return (
     <IonPage>
-      <IonContent fullscreen className="activity-content">
-        <div className="activity-container">
-          {/* Welcome Section */}
-          <div className="activity-header-section">
-            <IonText>
-              <h1 className="activity-welcome-title">Your Activity</h1>
-              <p className="activity-welcome-subtitle">Track your daily progress and achievements</p>
-            </IonText>
-          </div>
+      <IonContent fullscreen className="act-content">
 
-          {/* Stats Grid */}
-          <div className="activity-stats-grid">
-            <div className="activity-stat-card">
-              <div className="stat-icon-wrapper hours">
+        {/* Hero */}
+        <div className="act-hero">
+          <div className="act-hero-bg" />
+          <div className="act-hero-inner">
+            <h1 className="act-hero-title">Your Activity</h1>
+            <p className="act-hero-sub">Track your daily progress and achievements</p>
+          </div>
+        </div>
+
+        <div className="act-container">
+
+          {/* Stats Row */}
+          <div className="act-stats-row">
+            <div className="act-stat-card">
+              <div className="act-stat-icon-wrap act-icon-hours">
                 <IonIcon icon={timeOutline} />
               </div>
-              <div className="stat-content">
-                <IonText className="stat-value">{stats.totalHours}</IonText>
-                <IonText className="stat-label">Total Hours</IonText>
+              <div>
+                <p className="act-stat-num">320</p>
+                <p className="act-stat-lbl">Total Hours</p>
               </div>
             </div>
-            <div className="activity-stat-card">
-              <div className="stat-icon-wrapper days">
+            <div className="act-stat-card">
+              <div className="act-stat-icon-wrap act-icon-days">
                 <IonIcon icon={calendarOutline} />
               </div>
-              <div className="stat-content">
-                <IonText className="stat-value">{stats.daysWorked}</IonText>
-                <IonText className="stat-label">Days Worked</IonText>
+              <div>
+                <p className="act-stat-num">45</p>
+                <p className="act-stat-lbl">Days Worked</p>
               </div>
             </div>
           </div>
 
           {/* Filter Tabs */}
-          <div className="activity-filter-tabs">
-            <button 
-              className={`filter-tab ${selectedFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('all')}
-            >
-              All
-            </button>
-            <button 
-              className={`filter-tab ${selectedFilter === 'time-in' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('time-in')}
-            >
-              Time In
-            </button>
-            <button 
-              className={`filter-tab ${selectedFilter === 'time-out' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('time-out')}
-            >
-              Time Out
-            </button>
-            <button 
-              className={`filter-tab ${selectedFilter === 'dtr' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('dtr')}
-            >
-              DTR
-            </button>
-            <button 
-              className={`filter-tab ${selectedFilter === 'report' ? 'active' : ''}`}
-              onClick={() => setSelectedFilter('report')}
-            >
-              Reports
-            </button>
+          <div className="act-filter-row">
+            {filters.map(f => (
+              <button
+                key={f.key}
+                className={`act-filter-btn ${selectedFilter === f.key ? 'act-filter-active' : ''}`}
+                onClick={() => setSelectedFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
 
-          {/* Search Bar */}
-          <div className="activity-search-container">
-            <div className="custom-searchbar">
-              <IonIcon icon={searchOutline} className="search-icon" />
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search activities..."
-                className="search-input"
-              />
-              {searchText && (
-                <button className="clear-btn" onClick={() => setSearchText('')}>
-                  <IonIcon icon={closeOutline} />
-                </button>
-              )}
-            </div>
+          {/* Search */}
+          <div className="act-search-wrap">
+            <IonIcon icon={searchOutline} className="act-search-icon" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              placeholder="Search activities..."
+              className="act-search-input"
+            />
+            {searchText && (
+              <button className="act-search-clear" onClick={() => setSearchText('')}>
+                <IonIcon icon={closeOutline} />
+              </button>
+            )}
           </div>
 
-          {/* Activity Timeline */}
-          <div className="activity-timeline-section">
-            <div className="timeline-header">
-              <IonText>
-                <h2 className="timeline-title">Activity Timeline</h2>
-              </IonText>
-              <IonText className="timeline-count">{filteredActivities.length} activities</IonText>
-            </div>
+          {/* Timeline */}
+          <div className="act-timeline-head">
+            <span className="act-timeline-title">Activity Timeline</span>
+            <span className="act-timeline-count">{filtered.length} activities</span>
+          </div>
 
-            <div className="activity-timeline">
-              {filteredActivities.map((activity) => (
-                <div key={activity.id} className="activity-timeline-item">
-                  <div className="timeline-left">
-                    <div className="activity-time-badge">
-                      <IonText className="activity-time">{activity.time}</IonText>
-                      <IonText className="activity-date">{activity.date}</IonText>
+          <div className="act-timeline">
+            {filtered.map((activity, idx) => {
+              const cfg = typeConfig[activity.type];
+              const isLast = idx === filtered.length - 1;
+              return (
+                <div key={activity.id} className="act-tl-item">
+                  <div className="act-tl-left">
+                    <p className="act-tl-time">{activity.time}</p>
+                    <p className="act-tl-date">{activity.date}</p>
+                  </div>
+                  <div className="act-tl-spine">
+                    <div className="act-tl-dot" style={{ background: cfg.color }} />
+                    {!isLast && <div className="act-tl-line" />}
+                  </div>
+                  <div className="act-tl-card">
+                    <div className="act-tl-card-top">
+                      <div className="act-tl-icon-wrap" style={{ background: cfg.bg }}>
+                        <IonIcon icon={cfg.icon} style={{ color: cfg.color }} />
+                      </div>
+                      <span className="act-tl-type-chip" style={{ color: cfg.color, background: cfg.bg }}>
+                        {cfg.label}
+                      </span>
                     </div>
-                  </div>
-                  <div className="timeline-center">
-                    <div className="timeline-dot" style={{ background: getActivityIconColor(activity.type) }}></div>
-                    <div className="timeline-line"></div>
-                  </div>
-                  <div className="timeline-right">
-                    <div className="activity-content-card">
-                      <div className="card-header">
-                        <div 
-                          className="activity-icon-wrapper"
-                          style={{ background: getActivityBgColor(activity.type) }}
-                        >
-                          <IonIcon icon={getActivityIcon(activity.type)} style={{ color: getActivityIconColor(activity.type) }} />
-                        </div>
-                        <div className="activity-type-badge">
-                          <span>{getTypeLabel(activity.type)}</span>
-                        </div>
-                      </div>
-                      <div className="card-body">
-                        <IonText className="activity-title">{activity.title}</IonText>
-                        <IonText className="activity-description">{activity.description}</IonText>
-                      </div>
-                      <div className="card-footer">
-                        <span className="activity-category">{activity.category}</span>
-                      </div>
+                    <p className="act-tl-card-title">{activity.title}</p>
+                    <p className="act-tl-card-desc">{activity.description}</p>
+                    <div className="act-tl-card-footer">
+                      <span className="act-tl-category">{activity.category}</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
+
         </div>
       </IonContent>
-
       <BottomNav activeTab="activity" />
     </IonPage>
   );

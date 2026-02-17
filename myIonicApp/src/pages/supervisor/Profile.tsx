@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonText, IonCard, IonCardContent, IonIcon, IonRow, IonCol, IonGrid, IonButton } from '@ionic/react';
-import { personCircleOutline, mailOutline, callOutline, locationOutline, businessOutline, calendarOutline, settingsOutline, cameraOutline, logOutOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon, IonBadge } from '@ionic/react';
+import { personCircleOutline, mailOutline, businessOutline, settingsOutline, cameraOutline, logOutOutline, lockClosedOutline, notificationsOutline, chevronForwardOutline, createOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import LogoutModal from '../../components/LogoutModal';
@@ -10,207 +10,125 @@ const Profile: React.FC = () => {
   const history = useHistory();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
+  const stats = [
+    { val: '3',   lbl: 'Years Exp.' },
+    { val: '25',  lbl: 'Trainees' },
+    { val: '98%', lbl: 'Success' },
+    { val: '4.9', lbl: 'Rating' },
+  ];
 
-  const handleLogoutConfirm = () => {
-    setShowLogoutModal(false);
-    history.push('/login');
-  };
+  const infoItems = [
+    { icon: personCircleOutline, label: 'Full Name',    value: 'Dr. Kath Montenegro' },
+    { icon: mailOutline,         label: 'Email',        value: 'kth.mntngr@university.edu' },
+    { icon: businessOutline,     label: 'Employee ID',  value: 'UIP-2024-001' },
+    { icon: settingsOutline,     label: 'Role',         value: 'Senior IT Supervisor' },
+  ];
 
-  const handleLogoutCancel = () => {
-    setShowLogoutModal(false);
-  };
+  const menuItems = [
+    { icon: lockClosedOutline,    title: 'Change Password',           sub: 'Update your account password',        action: 'Change' },
+    { icon: notificationsOutline, title: 'Notification Preferences',  sub: 'Manage email and push notifications', action: 'Manage' },
+    { icon: settingsOutline,      title: 'Privacy Settings',          sub: 'Control your data and privacy',       action: 'Settings' },
+  ];
 
   return (
     <IonPage>
-      <IonContent fullscreen>
-        <div className="dashboard-container">
-          <div className="welcome-section">
-            <IonText>
-              <h1 className="welcome-title">My Profile</h1>
-              <p className="welcome-subtitle">Manage your account information and preferences</p>
-            </IonText>
-          </div>
+      <IonContent fullscreen className="sv-content" scrollY={!showLogoutModal}>
 
-          {/* Profile Header Card */}
-          <div className="progress-card profile-header-card">
-            <div className="profile-header">
-              <div className="profile-avatar-section">
-                <div className="profile-avatar">
-                  <IonIcon icon={personCircleOutline} />
-                </div>
-                <div className="profile-avatar-edit">
-                  <button className="profile-edit-button">
-                    <IonIcon icon={cameraOutline} />
-                  </button>
-                </div>
-              </div><br /><br />
-              <div className="profile-info">
-                <h2 className="profile-name">Dr. Kath Montenegro</h2>
-                <p className="profile-role">Senior IT Supervisor</p>
-                <p className="profile-department">Information Technology Department</p>
-                <div className="profile-status">
-                  <span className="status-indicator active"></span>
-                  Active Supervisor
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Personal Information */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Personal Information</h2>
-              </IonText>
-            </div>
-            <div className="profile-info-grid">
-              <div className="info-item">
+        {/* Profile Hero */}
+        <div className="sv-profile-card">
+          <div className="sv-profile-cover" />
+          <div className="sv-profile-body">
+            <div className="sv-profile-av-wrap">
+              <div className="sv-profile-av">
                 <IonIcon icon={personCircleOutline} />
-                <div>
-                  <label>Full Name</label>
-                  <p>Dr. Kath Montenegro</p>
-                </div>
               </div>
-              <div className="info-item">
-                <IonIcon icon={mailOutline} />
-                <div>
-                  <label>Email Address</label>
-                  <p>kth.mntngr@university.edu</p>
-                </div>
-              </div>
-              <div className="info-item">
-                <IonIcon icon={businessOutline} />
-                <div>
-                  <label>Employee ID</label>
-                  <p>UIP-2024-001</p>
-                </div>
-              </div>
-              <div className="info-item">
-                <IonIcon icon={settingsOutline} />
-                <div>
-                  <label>Role</label>
-                  <p>Senior IT Supervisor</p>
-                </div>
-              </div>
+              <button className="sv-profile-av-edit"><IonIcon icon={cameraOutline} /></button>
+            </div>
+            <p className="sv-profile-name">Dr. Kath Montenegro</p>
+            <p className="sv-profile-role">Senior IT Supervisor</p>
+            <span className="sv-profile-dept-badge">Information Technology Department</span>
+            <div className="sv-profile-active-row">
+              <span className="sv-profile-active-dot" />
+              Active Supervisor
             </div>
           </div>
+        </div>
 
-          {/* Professional Information */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Professional Information</h2>
-              </IonText>
-            </div>
-            <IonGrid>
-              <IonRow>
-                <IonCol size="6">
-                  <div className="stat-item">
-                    <h3>3</h3>
-                    <p>Years Experience</p>
-                  </div>
-                </IonCol>
-                <IonCol size="6">
-                  <div className="stat-item">
-                    <h3>25</h3>
-                    <p>Trainees Supervised</p>
-                  </div>
-                </IonCol>
-              </IonRow>
-              <IonRow>
-                <IonCol size="6">
-                  <div className="stat-item">
-                    <h3>98%</h3>
-                    <p>Success Rate</p>
-                  </div>
-                </IonCol>
-                <IonCol size="6">
-                  <div className="stat-item">
-                    <h3>4.9</h3>
-                    <p>Rating</p>
-                  </div>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
+        <div className="sv-body sv-body-account">
+
+          {/* Stats Row */}
+          <div className="sv-profile-stats">
+            {stats.map((s, i) => (
+              <React.Fragment key={i}>
+                <div className="sv-profile-stat">
+                  <p className="sv-profile-stat-val">{s.val}</p>
+                  <p className="sv-profile-stat-lbl">{s.lbl}</p>
+                </div>
+                {i < stats.length - 1 && <div className="sv-profile-stat-div" />}
+              </React.Fragment>
+            ))}
           </div>
 
-          {/* Account Settings */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Account Settings</h2>
-              </IonText>
-            </div>
-            <div className="settings-list">
-              <div className="setting-item">
-                <div className="setting-info">
-                  <IonIcon icon={settingsOutline} />
-                  <div>
-                    <h4>Change Password</h4>
-                    <p>Update your account password</p>
-                  </div>
-                </div>
-                <button color="primary">Change</button>
+          {/* Personal Info */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Account</p>
+                <h2 className="sv-card-title">Personal Information</h2>
               </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <IonIcon icon={mailOutline} />
-                  <div>
-                    <h4>Notification Preferences</h4>
-                    <p>Manage email and push notifications</p>
-                  </div>
-                </div>
-                <button color="primary">Manage</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <IonIcon icon={settingsOutline} />
-                  <div>
-                    <h4>Privacy Settings</h4>
-                    <p>Control your data and privacy options</p>
-                  </div>
-                </div>
-                <button color="primary">Settings</button>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Quick Actions</h2>
-              </IonText>
-            </div>
-            <div className="quick-actions">
-              <button className="action-button-primary" onClick={() => history.push('/edit-profile')}>
-                <IonIcon icon={settingsOutline} slot="start" />
-                Edit Profile
+              <button className="sv-edit-btn" onClick={() => history.push('/edit-profile')}>
+                <IonIcon icon={createOutline} /> Edit
               </button>
-              <button className="action-button-secondary">
-                <IonIcon icon={settingsOutline} slot="start" />
-                Export Data
-              </button>
+            </div>
+            <div className="sv-info-list">
+              {infoItems.map((item, i) => (
+                <div key={i} className="sv-info-item">
+                  <div className="sv-info-icon"><IonIcon icon={item.icon} /></div>
+                  <div className="sv-info-text">
+                    <p className="sv-info-lbl">{item.label}</p>
+                    <p className="sv-info-val">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Preferences</p>
+                <h2 className="sv-card-title">Account Settings</h2>
+              </div>
+            </div>
+            <div className="sv-menu-list">
+              {menuItems.map((item, i) => (
+                <div key={i} className={`sv-menu-item ${i < menuItems.length - 1 ? 'sv-menu-bordered' : ''}`}>
+                  <div className="sv-menu-icon"><IonIcon icon={item.icon} /></div>
+                  <div className="sv-menu-text">
+                    <p className="sv-menu-title">{item.title}</p>
+                    <p className="sv-menu-sub">{item.sub}</p>
+                  </div>
+                  <button className="sv-menu-action-btn">{item.action}</button>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Logout */}
-          <div className="progress-card">
-            <button className="action-button-secondary logout-button" onClick={handleLogoutClick}>
-              <IonIcon icon={logOutOutline} slot="start" />
-              Logout
-            </button>
-          </div>
+          <button className="sv-logout-btn" onClick={() => setShowLogoutModal(true)}>
+            <IonIcon icon={logOutOutline} />
+            <span>Log Out</span>
+          </button>
+
         </div>
       </IonContent>
+
       <SupervisorBottomNav activeTab="profile" />
       <LogoutModal
         isOpen={showLogoutModal}
-        onConfirm={handleLogoutConfirm}
-        onCancel={handleLogoutCancel}
+        onConfirm={() => { setShowLogoutModal(false); history.push('/login'); }}
+        onCancel={() => setShowLogoutModal(false)}
       />
     </IonPage>
   );

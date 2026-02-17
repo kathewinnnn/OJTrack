@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonText, IonCard, IonCardContent, IonButton, IonIcon, IonRow, IonCol, IonGrid } from '@ionic/react';
-import { checkmarkCircleOutline, closeCircleOutline, timeOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import { checkmarkCircleOutline, closeCircleOutline, timeOutline, calendarOutline } from 'ionicons/icons';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
 
@@ -14,163 +14,148 @@ interface AttendanceRecord {
 }
 
 const Attendance: React.FC = () => {
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([
+  const [records, setRecords] = useState<AttendanceRecord[]>([
     { id: 1, studentName: 'Katherine Mae', timeIn: '8:00 AM', timeOut: null, status: 'Logged In', verificationStatus: 'Pending' },
     { id: 2, studentName: 'Mark Romer', timeIn: '9:30 AM', timeOut: '4:00 PM', status: 'Present', verificationStatus: 'Approved' },
     { id: 3, studentName: 'Samantha Lumpaodan', timeIn: '9:45 AM', timeOut: '4:15 PM', status: 'Late', verificationStatus: 'Pending' },
     { id: 4, studentName: 'Raffy Romero', timeIn: null, timeOut: null, status: 'Absent', verificationStatus: 'Disapproved' },
   ]);
 
-  const handleApprove = (id: number) => {
-    setAttendanceRecords(records =>
-      records.map(record =>
-        record.id === id ? { ...record, verificationStatus: 'Approved' as const } : record
-      )
-    );
+  const handleApprove = (id: number) =>
+    setRecords(r => r.map(rec => rec.id === id ? { ...rec, verificationStatus: 'Approved' as const } : rec));
+
+  const handleDisapprove = (id: number) =>
+    setRecords(r => r.map(rec => rec.id === id ? { ...rec, verificationStatus: 'Disapproved' as const } : rec));
+
+  const initials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+  const attendanceCfg: Record<string, { color: string; bg: string }> = {
+    Present:   { color: 'var(--c-green)', bg: 'rgba(52,211,153,0.1)' },
+    'Logged In': { color: 'var(--c-blue)', bg: 'rgba(96,165,250,0.1)' },
+    Late:      { color: 'var(--c-amber)', bg: 'rgba(251,191,36,0.1)' },
+    Absent:    { color: 'var(--c-red)', bg: 'rgba(248,113,113,0.1)' },
   };
 
-  const handleDisapprove = (id: number) => {
-    setAttendanceRecords(records =>
-      records.map(record =>
-        record.id === id ? { ...record, verificationStatus: 'Disapproved' as const } : record
-      )
-    );
+  const verifyCfg: Record<string, { color: string; bg: string }> = {
+    Approved:    { color: 'var(--c-green)', bg: 'rgba(52,211,153,0.12)' },
+    Disapproved: { color: 'var(--c-red)', bg: 'rgba(248,113,113,0.12)' },
+    Pending:     { color: 'var(--c-amber)', bg: 'rgba(251,191,36,0.12)' },
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Approved': return '#10b981';
-      case 'Disapproved': return '#ef4444';
-      case 'Pending': return '#f59e0b';
-      default: return '#6b7280';
-    }
-  };
-
-  const getAttendanceStatusColor = (status: string) => {
-    switch (status) {
-      case 'Present': return '#10b981';
-      case 'Logged In': return '#3b82f6';
-      case 'Late': return '#f59e0b';
-      case 'Absent': return '#ef4444';
-      default: return '#6b7280';
-    }
-  };
+  const approved   = records.filter(r => r.verificationStatus === 'Approved').length;
+  const pending    = records.filter(r => r.verificationStatus === 'Pending').length;
+  const disapproved= records.filter(r => r.verificationStatus === 'Disapproved').length;
 
   return (
     <IonPage>
-      <IonContent fullscreen>
-        <div className="dashboard-container">
-          <div className="welcome-section">
-            <IonText>
-              <h1 className="welcome-title">Attendance Verification</h1>
-              <p className="welcome-subtitle">Review and verify daily attendance records</p>
-            </IonText>
+      <IonContent fullscreen className="sv-content">
+
+        {/* Hero */}
+        <div className="sv-hero">
+          <div className="sv-hero-bg" />
+          <div className="sv-hero-inner">
+            <p className="sv-hero-sub">Review &amp; verify</p>
+            <h1 className="sv-hero-name">Attendance</h1>
+            <div className="sv-hero-meta">
+              <span className="sv-hero-chip">
+                <IonIcon icon={calendarOutline} />
+                Today
+              </span>
+              <span className="sv-hero-chip sv-chip-amber">{pending} pending</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sv-body">
+
+          {/* Summary Row */}
+          <div className="sv-stats-grid sv-stats-3">
+            <div className="sv-stat-card sv-stat-green">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={checkmarkCircleOutline} /></div>
+              <p className="sv-stat-num">{approved}</p>
+              <p className="sv-stat-lbl">Approved</p>
+            </div>
+            <div className="sv-stat-card sv-stat-amber">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={timeOutline} /></div>
+              <p className="sv-stat-num">{pending}</p>
+              <p className="sv-stat-lbl">Pending</p>
+            </div>
+            <div className="sv-stat-card sv-stat-red">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={closeCircleOutline} /></div>
+              <p className="sv-stat-num">{disapproved}</p>
+              <p className="sv-stat-lbl">Disapproved</p>
+            </div>
           </div>
 
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Today's Summary</h2>
-              </IonText>
-            </div>
-            <IonGrid>
-              <IonRow>
-                <IonCol size="6">
-                  <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <h3 style={{ color: '#10b981', margin: '0' }}>
-                      {attendanceRecords.filter(r => r.verificationStatus === 'Approved').length}
-                    </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#6b7280' }}>Approved</p>
-                  </div>
-                </IonCol>
-                <IonCol size="6">
-                  <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <h3 style={{ color: '#f59e0b', margin: '0' }}>
-                      {attendanceRecords.filter(r => r.verificationStatus === 'Pending').length}
-                    </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#6b7280' }}>Pending</p>
-                  </div>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
+          {/* Section Header */}
+          <div className="sv-list-header">
+            <span className="sv-list-title">Attendance Records</span>
+            <span className="sv-list-count">{records.length} students</span>
           </div>
 
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Attendance Records</h2>
-              </IonText>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {attendanceRecords.map(record => (
-                <div key={record.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '1rem',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  background: 'white'
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#1f2937' }}>{record.studentName}</h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                      <span style={{
-                        color: getAttendanceStatusColor(record.status),
-                        fontWeight: '500',
-                        fontSize: '0.875rem'
-                      }}>
-                        {record.status}
+          {/* Records */}
+          <div className="sv-attend-list">
+            {records.map(rec => {
+              const aCfg = attendanceCfg[rec.status];
+              const vCfg = verifyCfg[rec.verificationStatus];
+              return (
+                <div key={rec.id} className="sv-attend-card">
+                  {/* Left */}
+                  <div className="sv-attend-avatar">{initials(rec.studentName)}</div>
+
+                  {/* Middle */}
+                  <div className="sv-attend-info">
+                    <div className="sv-attend-name-row">
+                      <span className="sv-attend-name">{rec.studentName}</span>
+                      <span className="sv-attend-status-chip"
+                        style={{ color: aCfg.color, background: aCfg.bg }}>
+                        {rec.status}
                       </span>
-                      {record.timeIn && (
-                        <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                          <IonIcon icon={timeOutline} style={{ marginRight: '0.25rem' }} />
-                          In: {record.timeIn}
-                        </span>
-                      )}
-                      {record.timeOut && (
-                        <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-                          Out: {record.timeOut}
-                        </span>
-                      )}
                     </div>
-                    <div style={{
-                      marginTop: '0.5rem',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: getStatusColor(record.verificationStatus),
-                      color: 'white',
-                      fontSize: '0.75rem',
-                      fontWeight: '500',
-                      display: 'inline-block'
-                    }}>
-                      {record.verificationStatus}
+
+                    <div className="sv-attend-times">
+                      {rec.timeIn
+                        ? <span className="sv-time-pill sv-time-in">
+                            <IonIcon icon={timeOutline} /> In: {rec.timeIn}
+                          </span>
+                        : <span className="sv-time-pill sv-time-absent">No time in</span>}
+                      {rec.timeOut &&
+                        <span className="sv-time-pill sv-time-out">
+                          <IonIcon icon={timeOutline} /> Out: {rec.timeOut}
+                        </span>}
                     </div>
+
+                    <span className="sv-verify-badge"
+                      style={{ color: vCfg.color, background: vCfg.bg }}>
+                      {rec.verificationStatus}
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {record.verificationStatus === 'Pending' && (
-                      <>
-                        <button
-                          color="success"
-                          className="approve-buttonn"
-                          onClick={() => handleApprove(record.id)}
-                        >
-                          <IonIcon icon={checkmarkCircleOutline} />
-                        </button>
-                        <button
-                          color="danger"
-                          className="disapprove-buttonn"
-                          onClick={() => handleDisapprove(record.id)}
-                        >
-                          <IonIcon icon={closeCircleOutline} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+
+                  {/* Right: Action buttons */}
+                  {rec.verificationStatus === 'Pending' && (
+                    <div className="sv-attend-actions">
+                      <button
+                        className="sv-action-btn sv-btn-approve"
+                        onClick={() => handleApprove(rec.id)}
+                        title="Approve"
+                      >
+                        <IonIcon icon={checkmarkCircleOutline} />
+                      </button>
+                      <button
+                        className="sv-action-btn sv-btn-reject"
+                        onClick={() => handleDisapprove(rec.id)}
+                        title="Disapprove"
+                      >
+                        <IonIcon icon={closeCircleOutline} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
+
         </div>
       </IonContent>
       <SupervisorBottomNav activeTab="attendance" />

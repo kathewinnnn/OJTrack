@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonText, IonCard, IonCardContent, IonButton, IonIcon, IonRow, IonCol, IonGrid, IonChip } from '@ionic/react';
-import { checkmarkCircleOutline, closeCircleOutline, timeOutline, documentOutline, calendarOutline, attachOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import { checkmarkCircleOutline, closeCircleOutline, timeOutline, documentOutline, calendarOutline, attachOutline, documentTextOutline } from 'ionicons/icons';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
 
@@ -17,186 +17,141 @@ interface Report {
 
 const Reports: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([
-    {
-      id: 1,
-      studentName: 'Katherine Mae',
-      dateSubmitted: '2026-02-14',
-      timeIn: '8:00 AM',
-      timeOut: '4:00 PM',
-      reportDescription: 'Completed web development tasks for the week, including responsive design implementation and API integration.',
-      documentationAttachment: 'weekly_report_katherine.pdf',
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      studentName: 'Mark Romer',
-      dateSubmitted: '2026-02-13',
-      timeIn: '9:30 AM',
-      timeOut: '5:00 PM',
-      reportDescription: 'Worked on IoT project, successfully connected sensors and implemented data logging functionality.',
-      documentationAttachment: 'iot_project_mark.pdf',
-      status: 'Approved'
-    },
-    {
-      id: 3,
-      studentName: 'Samantha Lumpaodan',
-      dateSubmitted: '2026-02-14',
-      timeIn: '8:30 AM',
-      timeOut: '4:30 PM',
-      reportDescription: 'Database design and optimization tasks completed. Created ER diagrams and implemented query optimizations.',
-      documentationAttachment: 'database_design_samantha.pdf',
-      status: 'Pending'
-    },
-    {
-      id: 4,
-      studentName: 'Raffy Romero',
-      dateSubmitted: '2026-02-12',
-      timeIn: '9:00 AM',
-      timeOut: '4:15 PM',
-      reportDescription: 'Mobile app development progress: implemented user authentication and basic navigation structure.',
-      documentationAttachment: 'mobile_app_raffy.pdf',
-      status: 'Rejected'
-    },
+    { id: 1, studentName: 'Katherine Mae', dateSubmitted: '2026-02-14', timeIn: '8:00 AM', timeOut: '4:00 PM', reportDescription: 'Completed web development tasks for the week, including responsive design implementation and API integration.', documentationAttachment: 'weekly_report_katherine.pdf', status: 'Pending' },
+    { id: 2, studentName: 'Mark Romer', dateSubmitted: '2026-02-13', timeIn: '9:30 AM', timeOut: '5:00 PM', reportDescription: 'Worked on IoT project, successfully connected sensors and implemented data logging functionality.', documentationAttachment: 'iot_project_mark.pdf', status: 'Approved' },
+    { id: 3, studentName: 'Samantha Lumpaodan', dateSubmitted: '2026-02-14', timeIn: '8:30 AM', timeOut: '4:30 PM', reportDescription: 'Database design and optimization tasks completed. Created ER diagrams and implemented query optimizations.', documentationAttachment: 'database_design_samantha.pdf', status: 'Pending' },
+    { id: 4, studentName: 'Raffy Romero', dateSubmitted: '2026-02-12', timeIn: '9:00 AM', timeOut: '4:15 PM', reportDescription: 'Mobile app development progress: implemented user authentication and basic navigation structure.', documentationAttachment: 'mobile_app_raffy.pdf', status: 'Rejected' },
   ]);
 
-  const handleApprove = (id: number) => {
-    setReports(reports =>
-      reports.map(report =>
-        report.id === id ? { ...report, status: 'Approved' as const } : report
-      )
-    );
+  const handleApprove = (id: number) =>
+    setReports(r => r.map(rep => rep.id === id ? { ...rep, status: 'Approved' as const } : rep));
+  const handleReject = (id: number) =>
+    setReports(r => r.map(rep => rep.id === id ? { ...rep, status: 'Rejected' as const } : rep));
+
+  const initials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+  const statusCfg: Record<string, { color: string; bg: string }> = {
+    Approved: { color: 'var(--c-green)', bg: 'rgba(52,211,153,0.12)' },
+    Rejected: { color: 'var(--c-red)',   bg: 'rgba(248,113,113,0.12)' },
+    Pending:  { color: 'var(--c-amber)', bg: 'rgba(251,191,36,0.12)' },
   };
 
-  const handleReject = (id: number) => {
-    setReports(reports =>
-      reports.map(report =>
-        report.id === id ? { ...report, status: 'Rejected' as const } : report
-      )
-    );
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Approved': return '#10b981';
-      case 'Rejected': return '#ef4444';
-      case 'Pending': return '#f59e0b';
-      default: return '#6b7280';
-    }
-  };
+  const approved = reports.filter(r => r.status === 'Approved').length;
+  const pending  = reports.filter(r => r.status === 'Pending').length;
+  const rejected = reports.filter(r => r.status === 'Rejected').length;
 
   return (
     <IonPage>
-      <IonContent fullscreen>
-        <div className="dashboard-container">
-          <div className="welcome-section">
-            <IonText>
-              <h1 className="welcome-title">Reports Review</h1>
-              <p className="welcome-subtitle">Review and approve trainee activity reports</p>
-            </IonText>
+      <IonContent fullscreen className="sv-content">
+
+        {/* Hero */}
+        <div className="sv-hero">
+          <div className="sv-hero-bg" />
+          <div className="sv-hero-inner">
+            <p className="sv-hero-sub">Review &amp; approve</p>
+            <h1 className="sv-hero-name">Activity Reports</h1>
+            <div className="sv-hero-meta">
+              <span className="sv-hero-chip">
+                <IonIcon icon={documentTextOutline} />
+                {reports.length} total
+              </span>
+              <span className="sv-hero-chip sv-chip-amber">{pending} pending</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sv-body">
+
+          {/* Summary Row */}
+          <div className="sv-stats-grid sv-stats-3">
+            <div className="sv-stat-card sv-stat-green">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={checkmarkCircleOutline} /></div>
+              <p className="sv-stat-num">{approved}</p>
+              <p className="sv-stat-lbl">Approved</p>
+            </div>
+            <div className="sv-stat-card sv-stat-amber">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={timeOutline} /></div>
+              <p className="sv-stat-num">{pending}</p>
+              <p className="sv-stat-lbl">Pending</p>
+            </div>
+            <div className="sv-stat-card sv-stat-red">
+              <div className="sv-stat-icon-wrap"><IonIcon icon={closeCircleOutline} /></div>
+              <p className="sv-stat-num">{rejected}</p>
+              <p className="sv-stat-lbl">Rejected</p>
+            </div>
           </div>
 
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Reports Summary</h2>
-              </IonText>
-            </div>
-            <IonGrid>
-              <IonRow>
-                <IonCol size="4">
-                  <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <h3 style={{ color: '#10b981', margin: '0' }}>
-                      {reports.filter(r => r.status === 'Approved').length}
-                    </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.806rem' }}>Approved</p>
-                  </div>
-                </IonCol>
-                <IonCol size="4">
-                  <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <h3 style={{ color: '#f59e0b', margin: '0' }}>
-                      {reports.filter(r => r.status === 'Pending').length}
-                    </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.875rem' }}>Pending</p>
-                  </div>
-                </IonCol>
-                <IonCol size="4">
-                  <div style={{ textAlign: 'center', padding: '1rem' }}>
-                    <h3 style={{ color: '#ef4444', margin: '0' }}>
-                      {reports.filter(r => r.status === 'Rejected').length}
-                    </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#6b7280', fontSize: '0.875rem' }}>Rejected</p>
-                  </div>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
+          {/* List Header */}
+          <div className="sv-list-header">
+            <span className="sv-list-title">All Reports</span>
+            <span className="sv-list-count">{reports.length} items</span>
           </div>
 
-          <div className="progress-card">
-            <div className="progress-header">
-              <IonText>
-                <h2 className="card-title">Activity Reports</h2>
-              </IonText>
-            </div>
-            <div className="reports-list">
-              {reports.map(report => (
-                <div key={report.id} className="report-card">
-                  <div className="report-content">
-                    <div className="report-header">
-                      <h3 className="report-student-name">{report.studentName}</h3>
-                      <IonChip className={`status-chip status-${report.status.toLowerCase()}`}>
+          {/* Report Cards */}
+          <div className="sv-report-list">
+            {reports.map(report => {
+              const cfg = statusCfg[report.status];
+              return (
+                <div key={report.id} className="sv-report-card">
+
+                  {/* Card Header */}
+                  <div className="sv-report-card-header">
+                    <div className="sv-report-avatar">{initials(report.studentName)}</div>
+                    <div className="sv-report-header-info">
+                      <span className="sv-report-student">{report.studentName}</span>
+                      <span className="sv-report-status-chip"
+                        style={{ color: cfg.color, background: cfg.bg }}>
                         {report.status}
-                      </IonChip>
-                    </div>
-
-                    <div className="report-meta">
-                      <div className="meta-item">
-                        <IonIcon icon={calendarOutline} />
-                        <span>Submitted: {new Date(report.dateSubmitted).toLocaleDateString()}</span>
-                      </div>
-                      <div className="meta-item">
-                        <IonIcon icon={timeOutline} />
-                        <span>{report.timeIn} - {report.timeOut}</span>
-                      </div>
-                    </div>
-
-                    <div className="report-description">
-                      <h4 className="description-title">
-                        <IonIcon icon={documentOutline} />
-                        Report Description
-                      </h4>
-                      <p className="description-text">{report.reportDescription}</p>
-                    </div>
-
-                    <div className="report-attachment">
-                      <IonIcon icon={attachOutline} />
-                      <span>Attachment: {report.documentationAttachment}</span>
+                      </span>
                     </div>
                   </div>
 
+                  {/* Meta */}
+                  <div className="sv-report-meta">
+                    <span className="sv-report-meta-item">
+                      <IonIcon icon={calendarOutline} />
+                      {new Date(report.dateSubmitted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <span className="sv-report-meta-item">
+                      <IonIcon icon={timeOutline} />
+                      {report.timeIn} – {report.timeOut}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <div className="sv-report-desc-block">
+                    <div className="sv-report-desc-title">
+                      <IonIcon icon={documentOutline} />
+                      Report Description
+                    </div>
+                    <p className="sv-report-desc-text">{report.reportDescription}</p>
+                  </div>
+
+                  {/* Attachment */}
+                  <div className="sv-report-attachment">
+                    <IonIcon icon={attachOutline} />
+                    <span>{report.documentationAttachment}</span>
+                  </div>
+
+                  {/* Actions */}
                   {report.status === 'Pending' && (
-                    <div className="report-actions">
-                      <button
-                        color="success"
-                        className="approve-button"
-                        onClick={() => handleApprove(report.id)}
-                      >
-                        <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                    <div className="sv-report-actions">
+                      <button className="sv-report-btn sv-btn-approve-full" onClick={() => handleApprove(report.id)}>
+                        <IonIcon icon={checkmarkCircleOutline} />
                         Approve
                       </button>
-                      <button
-                        color="danger"
-                        className="disapprove-button"
-                        onClick={() => handleReject(report.id)}
-                      >
-                        <IonIcon icon={closeCircleOutline} slot="start" />
+                      <button className="sv-report-btn sv-btn-reject-full" onClick={() => handleReject(report.id)}>
+                        <IonIcon icon={closeCircleOutline} />
                         Reject
                       </button>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
+
         </div>
       </IonContent>
       <SupervisorBottomNav activeTab="reports" />
