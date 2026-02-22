@@ -1,18 +1,39 @@
 import React, { useState } from 'react';
 import { IonPage, IonContent, IonText, IonIcon } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { timeOutline, documentTextOutline, cloudUploadOutline, logInOutline, notificationsOutline, settingsOutline } from 'ionicons/icons';
 import BottomNav from '../components/BottomNav';
 
 interface DashboardProps {}
 
 const Dashboard: React.FC<DashboardProps> = () => {
-  const history = useHistory();
+  const location = useLocation();
   const [requiredHours] = useState<number>(320);
   const [renderedHours] = useState<number>(120);
 
   const remainingHours = requiredHours - renderedHours;
   const progressPercentage = Math.min((renderedHours / requiredHours) * 100, 100);
+
+  const handleNavigation = (route: string) => {
+    // Use history.pushState for SPA navigation
+    window.history.pushState({ path: route }, '', route);
+    
+    // Also manually update the parent frame's URL if in iframe
+    // This helps in mobile simulators that use iframes
+    try {
+      if (window.self !== window.top) {
+        const parentWindow = window.parent;
+        if (parentWindow && parentWindow.history) {
+          parentWindow.history.pushState({ path: route }, '', route);
+        }
+      }
+    } catch (e) {
+      // Cross-origin restrictions may prevent accessing parent - ignore errors
+    }
+    
+    // Force router to recognize the navigation
+    window.dispatchEvent(new PopStateEvent('popstate', { state: { path: route } }));
+  };
 
   return (
     <IonPage>
@@ -38,7 +59,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
 
         <div className="dash-body">
 
-          {/* Progress Card */}
+          {/* Progress Card */}<br/> <br />
           <div className="dash-card progress-main-card">
             <div className="progress-card-label">
               <span className="progress-card-tag">OJT Progress</span>
@@ -74,19 +95,19 @@ const Dashboard: React.FC<DashboardProps> = () => {
             <span className="dash-section-title">Quick Actions</span>
           </div>
           <div className="quick-actions-grid">
-            <button className="qa-card qa-timein" onClick={() => history.push('/dtr')}>
+            <button className="qa-card qa-timein" onClick={() => handleNavigation('/dtr')}>
               <div className="qa-icon"><IonIcon icon={logInOutline} /></div>
               <span className="qa-label">Time In</span>
             </button>
-            <button className="qa-card qa-dtr" onClick={() => history.push('/dtr')}>
+            <button className="qa-card qa-dtr" onClick={() => handleNavigation('/dtr')}>
               <div className="qa-icon"><IonIcon icon={documentTextOutline} /></div>
               <span className="qa-label">Log DTR</span>
             </button>
-            <button className="qa-card qa-report" onClick={() => history.push('/reports')}>
+            <button className="qa-card qa-report" onClick={() => handleNavigation('/reports')}>
               <div className="qa-icon"><IonIcon icon={cloudUploadOutline} /></div>
               <span className="qa-label">Upload Report</span>
             </button>
-            <button className="qa-card qa-activity" onClick={() => history.push('/activity')}>
+            <button className="qa-card qa-activity" onClick={() => handleNavigation('/activity')}>
               <div className="qa-icon"><IonIcon icon={timeOutline} /></div>
               <span className="qa-label">Activity</span>
             </button>

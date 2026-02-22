@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IonPage, IonContent, IonText, IonIcon } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { searchOutline, chevronForwardOutline, schoolOutline, peopleOutline } from 'ionicons/icons';
+import { searchOutline, chevronForwardOutline, schoolOutline, peopleOutline, arrowBackOutline } from 'ionicons/icons';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
 
@@ -25,6 +25,7 @@ interface Trainee {
 
 const Trainees: React.FC = () => {
   const history = useHistory();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const trainees: Trainee[] = [
     { id: 1, name: 'Katherine Guzman', course: 'BSIT', school: 'ISPSC', status: 'Active', progress: 80, email: 'kathewinnnn@gmail.com', phone: '123-456-7890', startDate: '2026-01-15', supervisorNotes: 'Excellent performance in web development tasks.', birthday: '2000-05-15', age: 24, address: '123 Main St, City', section: 'A', profilePicture: 'https://via.placeholder.com/150' },
@@ -32,6 +33,12 @@ const Trainees: React.FC = () => {
     { id: 3, name: 'Raffy Romero', course: 'BSIT', school: 'ISPSC', status: 'Active', progress: 50, email: 'raffy@gmail.com', phone: '123-456-7892', startDate: '2026-01-15', supervisorNotes: 'Excellent performance in IoT tasks.', birthday: '1999-12-10', age: 25, address: '789 Oak St, City', section: 'A', profilePicture: 'https://via.placeholder.com/150' },
     { id: 4, name: 'Mark Romer', course: 'BSIT', school: 'ISPSC', status: 'Inactive', progress: 30, email: 'mark@gmail.com', phone: '123-456-7893', startDate: '2026-01-15', supervisorNotes: 'Needs to submit pending reports.', birthday: '2000-08-22', age: 24, address: '321 Pine St, City', section: 'B', profilePicture: 'https://via.placeholder.com/150' },
   ];
+
+  const filteredTrainees = trainees.filter(trainee =>
+    trainee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    trainee.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    trainee.school.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const initials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -66,62 +73,83 @@ const Trainees: React.FC = () => {
           {/* Search */}
           <div className="sv-search-bar">
             <IonIcon icon={searchOutline} className="sv-search-icon" />
-            <input type="text" placeholder="Search trainees…" className="sv-search-input" />
+            <input 
+              type="text" 
+              placeholder="Search trainees…" 
+              className="sv-search-input" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
           {/* List Header */}
           <div className="sv-list-header">
             <span className="sv-list-title">All Trainees</span>
-            <span className="sv-list-count">{trainees.length} students</span>
+            <span className="sv-list-count">{filteredTrainees.length} students</span>
           </div>
 
           {/* Trainee Cards */}
           <div className="sv-trainee-list">
-            {trainees.map(trainee => (
-              <div
-                key={trainee.id}
-                className="sv-trainee-card"
-                onClick={() => history.push(`/trainee-detail/${trainee.id}`)}
-              >
-                {/* Left: Avatar */}
-                <div className="sv-trainee-avatar">
-                  {initials(trainee.name)}
-                </div>
-
-                {/* Middle: Info */}
-                <div className="sv-trainee-info">
-                  <div className="sv-trainee-name-row">
-                    <span className="sv-trainee-name">{trainee.name}</span>
-                    <span className={`sv-trainee-status ${trainee.status === 'Active' ? 'sv-status-active' : 'sv-status-inactive'}`}>
-                      {trainee.status}
-                    </span>
-                  </div>
-                  <div className="sv-trainee-meta-row">
-                    <span className="sv-trainee-meta">
-                      <IonIcon icon={schoolOutline} />
-                      {trainee.course} · {trainee.school}
-                    </span>
-                    <span className="sv-trainee-section">Sec {trainee.section}</span>
+            {filteredTrainees.length > 0 ? (
+              filteredTrainees.map(trainee => (
+                <div
+                  key={trainee.id}
+                  className="sv-trainee-card"
+                  onClick={() => history.push(`/trainee-detail/${trainee.id}`)}
+                >
+                  {/* Left: Avatar */}
+                  <div className="sv-trainee-avatar">
+                    {initials(trainee.name)}
                   </div>
 
-                  {/* Mini Progress */}
-                  <div className="sv-trainee-progress-row">
-                    <div className="sv-mini-track">
-                      <div
-                        className="sv-mini-fill"
-                        style={{ width: `${trainee.progress}%`, background: progressColor(trainee.progress) }}
-                      />
+                  {/* Middle: Info */}
+                  <div className="sv-trainee-info">
+                    <div className="sv-trainee-name-row">
+                      <span className="sv-trainee-name">{trainee.name}</span>
+                      <span className={`sv-trainee-status ${trainee.status === 'Active' ? 'sv-status-active' : 'sv-status-inactive'}`}>
+                        {trainee.status}
+                      </span>
                     </div>
-                    <span className="sv-trainee-pct" style={{ color: progressColor(trainee.progress) }}>
-                      {trainee.progress}%
-                    </span>
-                  </div>
-                </div>
+                    <div className="sv-trainee-meta-row">
+                      <span className="sv-trainee-meta">
+                        <IonIcon icon={schoolOutline} />
+                        {trainee.course} · {trainee.school}
+                      </span>
+                      <span className="sv-trainee-section">Sec {trainee.section}</span>
+                    </div>
 
-                {/* Right: Arrow */}
-                <IonIcon icon={chevronForwardOutline} className="sv-trainee-arrow" />
+                    {/* Mini Progress */}
+                    <div className="sv-trainee-progress-row">
+                      <div className="sv-mini-track">
+                        <div
+                          className="sv-mini-fill"
+                          style={{ width: `${trainee.progress}%`, background: progressColor(trainee.progress) }}
+                        />
+                      </div>
+                      <span className="sv-trainee-pct" style={{ color: progressColor(trainee.progress) }}>
+                        {trainee.progress}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Arrow */}
+                  <IonIcon icon={chevronForwardOutline} className="sv-trainee-arrow" />
+                </div>
+              ))
+            ) : (
+              <div className="sv-no-results">
+                <div className="sv-no-results-icon">🔍</div>
+                <p className="sv-no-results-text">No trainees found</p>
+                <p className="sv-no-results-sub">Try adjusting your search</p>
+                <button 
+                  className="sv-back-button"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <IonIcon icon={arrowBackOutline} />
+                  Back to all trainees
+                </button>
               </div>
-            ))}
+            )}
           </div>
 
         </div>

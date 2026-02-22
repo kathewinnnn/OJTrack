@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { useIonRouter } from '@ionic/react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import './LogoutModal.css';
 
 interface LogoutModalProps {
@@ -7,6 +7,7 @@ interface LogoutModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
+  onComplete?: () => void;
 }
 
 const LogoutModal: React.FC<LogoutModalProps> = ({
@@ -14,65 +15,89 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
   onConfirm,
   onCancel,
   isLoading = false,
+  onComplete,
 }) => {
-  const ionRouter = useIonRouter();
-  const modalRef = useRef<HTMLDivElement>(null);
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
-  const previousActiveElement = useRef<HTMLElement | null>(null);
+  const history = useHistory();
+  const [navigateToLogin, setNavigateToLogin] = useState(false);
+  const modalRef         = useRef<HTMLDivElement>(null);
+  const confirmButtonRef   = useRef<HTMLButtonElement>(null);
+  const previousActiveEl   = useRef<HTMLElement | null>(null);
+  const hasNavigatedRef    = useRef(false);
+  const timerRef           = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) onCancel();
+      if (event.key === 'Escape' && isOpen && !isLoading) onCancel();
     },
-    [isOpen, onCancel]
+    [isOpen, isLoading, onCancel]
   );
 
   const handleBackdropClick = (event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) onCancel();
+    if (event.target === event.currentTarget && !isLoading) onCancel();
   };
 
+  /* ── Wait for the progress-bar animation, THEN navigate ── */
   useEffect(() => {
-    if (isLoading) {
-      // Navigate to login after animation completes
-      const timer = setTimeout(() => {
-        ionRouter.push('/login');
-      }, 1500);
-      return () => clearTimeout(timer);
+    // Not loading — clear everything and reset the guard
+    if (!isLoading) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      hasNavigatedRef.current = false;
+      return;
     }
-  }, [isLoading, ionRouter]);
 
+    // Already scheduled — don't double-fire
+    if (hasNavigatedRef.current) return;
+    hasNavigatedRef.current = true;
+    timerRef.current = setTimeout(() => {
+      // Cleanup auth state before leaving
+      onComplete?.();
+      // Set state to trigger navigation - this ensures the component re-renders properly
+      setNavigateToLogin(true);
+    }, 1500); // ← must equal the CSS animation duration in LogoutModal.css
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [isLoading, onComplete]);
+
+  /* ── Handle navigation when state changes ── */
+  useEffect(() => {
+    if (navigateToLogin) {
+      history.replace('/login');
+    }
+  }, [navigateToLogin, history]);
+
+  /* ── Focus management ── */
   useEffect(() => {
     if (isOpen) {
-      previousActiveElement.current = document.activeElement as HTMLElement;
+      previousActiveEl.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
-      const timer = setTimeout(() => {
-        (confirmButtonRef.current as unknown as HTMLElement)?.focus();
-      }, 150);
+      const t = setTimeout(() => confirmButtonRef.current?.focus(), 150);
       document.addEventListener('keydown', handleKeyDown);
       return () => {
-        clearTimeout(timer);
+        clearTimeout(t);
         document.removeEventListener('keydown', handleKeyDown);
       };
     } else {
       document.body.style.overflow = '';
-      previousActiveElement.current?.focus();
+      previousActiveEl.current?.focus();
+      hasNavigatedRef.current = false;
     }
   }, [isOpen, handleKeyDown]);
 
+  /* ── Tab trap ── */
   const handleModalKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Tab') {
-      const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable && focusable.length > 0) {
-        const first = focusable[0];
-        const last  = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault(); last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault(); first.focus();
-        }
-      }
+    if (event.key !== 'Tab') return;
+    const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (!focusable || focusable.length === 0) return;
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
     }
   };
 
@@ -89,7 +114,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
     >
       <div
         ref={modalRef}
-        className="lm-container"
+        className={`lm-container${isLoading ? ' lm-container--loading' : ''}`}
         onKeyDown={handleModalKeyDown}
       >
         {/* Close × */}
@@ -103,53 +128,49 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
         </button>
 
         {/* Icon */}
-        <div className="lm-icon-wrap">
+        <div className={`lm-icon-wrap${isLoading ? ' lm-icon-wrap--spin' : ''}`}>
           <div className="lm-icon-ring lm-ring-outer" />
           <div className="lm-icon-ring lm-ring-inner" />
           <div className="lm-icon">
-            <span className="lm-icon-emoji">🚪</span>
+            <span className="lm-icon-emoji">{isLoading ? '👋' : '🚪'}</span>
           </div>
         </div>
 
         {/* Content */}
-        <h2 className="lm-title" id="lm-title">Log Out</h2>
+        <h2 className="lm-title" id="lm-title">
+          {isLoading ? 'Logging out…' : 'Log Out'}
+        </h2>
         <p className="lm-message" id="lm-message">
-          Are you sure you want to end your current session?
+          {isLoading
+            ? 'Please wait while we end your session.'
+            : 'Are you sure you want to end your current session?'}
         </p>
 
-        {/* Divider */}
-        <div className="lm-divider" />
+        {/* Progress bar — only during loading */}
+        {isLoading && (
+          <div className="lm-progress-track">
+            <div className="lm-progress-fill" />
+          </div>
+        )}
 
-        {/* Buttons */}
-        <div className="lm-actions">
-          <button
-            ref={confirmButtonRef}
-            className="lm-btn lm-btn-confirm"
-            onClick={() => !isLoading && onConfirm()}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="lm-loading-row">
-                <span className="lm-spinner" />
-                Logging out…
-              </span>
-            ) : (
-              <>
-                <span className="lm-btn-icon lm-btn-icon-confirm">✓</span>
-                Confirm
-              </>
-            )}
-          </button>
-
-          <button
-            className="lm-btn lm-btn-cancel"
-            onClick={() => !isLoading && onCancel()}
-            disabled={isLoading}
-          >
-            <span className="lm-btn-icon lm-btn-icon-cancel">✕</span>
-            Cancel
-          </button>
-        </div>
+        {/* Divider + buttons — hidden during loading */}
+        {!isLoading && <div className="lm-divider" />}
+        {!isLoading && (
+          <div className="lm-actions">
+            <button
+              ref={confirmButtonRef}
+              className="lm-btn lm-btn-confirm"
+              onClick={onConfirm}
+            >
+              <span className="lm-btn-icon lm-btn-icon-confirm">✓</span>
+              Confirm
+            </button>
+            <button className="lm-btn lm-btn-cancel" onClick={onCancel}>
+              <span className="lm-btn-icon lm-btn-icon-cancel">✕</span>
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

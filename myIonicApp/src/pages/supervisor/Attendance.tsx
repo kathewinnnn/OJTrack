@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { IonPage, IonContent, IonIcon } from '@ionic/react';
-import { checkmarkCircleOutline, closeCircleOutline, timeOutline, calendarOutline } from 'ionicons/icons';
+import { checkmarkCircleOutline, closeCircleOutline, timeOutline, calendarOutline, chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
+
+interface DTRRecord {
+  id: number;
+  date: string;
+  morningIn: string | null;
+  morningOut: string | null;
+  afternoonIn: string | null;
+  afternoonOut: string | null;
+  hours: number;
+  status: 'Present' | 'Absent';
+}
 
 interface AttendanceRecord {
   id: number;
@@ -11,15 +22,66 @@ interface AttendanceRecord {
   timeOut: string | null;
   status: 'Present' | 'Logged In' | 'Absent' | 'Late';
   verificationStatus: 'Pending' | 'Approved' | 'Disapproved';
+  dtr: DTRRecord[];
 }
 
 const Attendance: React.FC = () => {
   const [records, setRecords] = useState<AttendanceRecord[]>([
-    { id: 1, studentName: 'Katherine Mae', timeIn: '8:00 AM', timeOut: null, status: 'Logged In', verificationStatus: 'Pending' },
-    { id: 2, studentName: 'Mark Romer', timeIn: '9:30 AM', timeOut: '4:00 PM', status: 'Present', verificationStatus: 'Approved' },
-    { id: 3, studentName: 'Samantha Lumpaodan', timeIn: '9:45 AM', timeOut: '4:15 PM', status: 'Late', verificationStatus: 'Pending' },
-    { id: 4, studentName: 'Raffy Romero', timeIn: null, timeOut: null, status: 'Absent', verificationStatus: 'Disapproved' },
+    { 
+      id: 1, 
+      studentName: 'Katherine Mae', 
+      timeIn: '8:00 AM', 
+      timeOut: null, 
+      status: 'Logged In', 
+      verificationStatus: 'Pending',
+      dtr: [
+        { id: 1, date: '2026-02-21', morningIn: '8:00 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: null, hours: 4, status: 'Present' },
+        { id: 2, date: '2026-02-20', morningIn: '8:05 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '5:00 PM', hours: 7.92, status: 'Present' },
+        { id: 3, date: '2026-02-19', morningIn: null, morningOut: null, afternoonIn: null, afternoonOut: null, hours: 0, status: 'Absent' },
+      ]
+    },
+    { 
+      id: 2, 
+      studentName: 'Mark Romer', 
+      timeIn: '9:30 AM', 
+      timeOut: '4:00 PM', 
+      status: 'Present', 
+      verificationStatus: 'Approved',
+      dtr: [
+        { id: 1, date: '2026-02-21', morningIn: '9:30 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '4:00 PM', hours: 6.5, status: 'Present' },
+        { id: 2, date: '2026-02-20', morningIn: '8:00 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '5:00 PM', hours: 8, status: 'Present' },
+        { id: 3, date: '2026-02-19', morningIn: '8:00 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '5:00 PM', hours: 8, status: 'Present' },
+      ]
+    },
+    { 
+      id: 3, 
+      studentName: 'Samantha Lumpaodan', 
+      timeIn: '9:45 AM', 
+      timeOut: '4:15 PM', 
+      status: 'Late', 
+      verificationStatus: 'Pending',
+      dtr: [
+        { id: 1, date: '2026-02-21', morningIn: '9:45 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '4:15 PM', hours: 6.5, status: 'Present' },
+        { id: 2, date: '2026-02-20', morningIn: '10:00 AM', morningOut: '12:00 PM', afternoonIn: '1:00 PM', afternoonOut: '5:00 PM', hours: 6, status: 'Present' },
+        { id: 3, date: '2026-02-19', morningIn: null, morningOut: null, afternoonIn: null, afternoonOut: null, hours: 0, status: 'Absent' },
+      ]
+    },
+    { 
+      id: 4, 
+      studentName: 'Raffy Romero', 
+      timeIn: null, 
+      timeOut: null, 
+      status: 'Absent', 
+      verificationStatus: 'Disapproved',
+      dtr: [
+        { id: 1, date: '2026-02-21', morningIn: null, morningOut: null, afternoonIn: null, afternoonOut: null, hours: 0, status: 'Absent' },
+        { id: 2, date: '2026-02-20', morningIn: null, morningOut: null, afternoonIn: null, afternoonOut: null, hours: 0, status: 'Absent' },
+        { id: 3, date: '2026-02-19', morningIn: null, morningOut: null, afternoonIn: null, afternoonOut: null, hours: 0, status: 'Absent' },
+      ]
+    },
   ]);
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const handleApprove = (id: number) =>
     setRecords(r => r.map(rec => rec.id === id ? { ...rec, verificationStatus: 'Approved' as const } : rec));
@@ -99,19 +161,28 @@ const Attendance: React.FC = () => {
             {records.map(rec => {
               const aCfg = attendanceCfg[rec.status];
               const vCfg = verifyCfg[rec.verificationStatus];
+              const isExpanded = expandedId === rec.id;
+              
               return (
                 <div key={rec.id} className="sv-attend-card">
                   {/* Left */}
                   <div className="sv-attend-avatar">{initials(rec.studentName)}</div>
 
-                  {/* Middle */}
-                  <div className="sv-attend-info">
+                  {/* Middle - Clickable */}
+                  <div 
+                    className="sv-attend-info sv-attend-clickable"
+                    onClick={() => setExpandedId(isExpanded ? null : rec.id)}
+                  >
                     <div className="sv-attend-name-row">
                       <span className="sv-attend-name">{rec.studentName}</span>
                       <span className="sv-attend-status-chip"
                         style={{ color: aCfg.color, background: aCfg.bg }}>
                         {rec.status}
                       </span>
+                      <IonIcon 
+                        icon={isExpanded ? chevronUpOutline : chevronDownOutline} 
+                        className="sv-expand-icon"
+                      />
                     </div>
 
                     <div className="sv-attend-times">
@@ -137,18 +208,52 @@ const Attendance: React.FC = () => {
                     <div className="sv-attend-actions">
                       <button
                         className="sv-action-btn sv-btn-approve"
-                        onClick={() => handleApprove(rec.id)}
+                        onClick={(e) => { e.stopPropagation(); handleApprove(rec.id); }}
                         title="Approve"
                       >
                         <IonIcon icon={checkmarkCircleOutline} />
                       </button>
                       <button
                         className="sv-action-btn sv-btn-reject"
-                        onClick={() => handleDisapprove(rec.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDisapprove(rec.id); }}
                         title="Disapprove"
                       >
                         <IonIcon icon={closeCircleOutline} />
                       </button>
+                    </div>
+                  )}
+                  
+                  {/* DTR Dropdown */}
+                  {isExpanded && (
+                    <div className="sv-dtr-dropdown">
+                      <div className="sv-dtr-header">
+                        <span>Date</span>
+                        <span>Morning In</span>
+                        <span>Morning Out</span>
+                        <span>Afternoon In</span>
+                        <span>Afternoon Out</span>
+                        <span>Hours</span>
+                        <span>Status</span>
+                      </div>
+                      {rec.dtr.map(dtr => (
+                        <div key={dtr.id} className="sv-dtr-row">
+                          <span>{dtr.date}</span>
+                          <span>{dtr.morningIn || '-'}</span>
+                          <span>{dtr.morningOut || '-'}</span>
+                          <span>{dtr.afternoonIn || '-'}</span>
+                          <span>{dtr.afternoonOut || '-'}</span>
+                          <span>{dtr.hours.toFixed(2)}</span>
+                          <span 
+                            className="sv-dtr-status"
+                            style={{ 
+                              color: dtr.status === 'Present' ? 'var(--c-green)' : 'var(--c-red)',
+                              background: dtr.status === 'Present' ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)'
+                            }}
+                          >
+                            {dtr.status}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

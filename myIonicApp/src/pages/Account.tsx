@@ -39,14 +39,11 @@ const Account: React.FC = () => {
 
   const confirmLogout = () => {
     setIsLoggingOut(true);
-    setTimeout(() => {
-      setIsLoggingOut(false);
-      setShowLogoutModal(false);
-      localStorage.removeItem('isLoggedIn');
-      sessionStorage.clear();
-      history.push('/login');
-      window.history.replaceState(null, '', '/login');
-    }, 1000);
+  };
+
+  const handleLogoutComplete = () => {
+    localStorage.removeItem('isLoggedIn');
+    sessionStorage.clear();
   };
 
   const details = [
@@ -99,7 +96,13 @@ const Account: React.FC = () => {
           <div className="acc-section-card">
             <div className="acc-section-header">
               <span className="acc-section-title">Profile Information</span>
-              <button className="acc-edit-btn"><IonIcon icon={createOutline} /> Edit</button>
+              {/* Navigate to EditAccount page */}
+              <button
+                className="acc-edit-btn"
+                onClick={() => history.push('/edit-account')}
+              >
+                <IonIcon icon={createOutline} /> Edit
+              </button>
             </div>
             <div className="acc-detail-list">
               {details.map((d, i) => (
@@ -151,6 +154,7 @@ const Account: React.FC = () => {
         onConfirm={confirmLogout}
         onCancel={() => setShowLogoutModal(false)}
         isLoading={isLoggingOut}
+        onComplete={handleLogoutComplete}
       />
     </IonPage>
   );

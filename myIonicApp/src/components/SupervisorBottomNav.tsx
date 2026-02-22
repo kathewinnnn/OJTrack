@@ -27,7 +27,14 @@ const SupervisorBottomNav: React.FC<SupervisorBottomNavProps> = ({ activeTab }) 
   const currentActiveTab = getActiveTab();
 
   const handleNavigation = (route: string) => {
+    // Use history.push for SPA navigation
     history.push(route);
+    
+    // Also manually update the browser URL to ensure it changes
+    // This helps in mobile simulators that use iframes
+    if (window.location.pathname !== route) {
+      window.history.pushState({}, '', route);
+    }
   };
 
   return (

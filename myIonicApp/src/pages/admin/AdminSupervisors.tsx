@@ -1,9 +1,77 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import AdminLayout from '../../components/AdminLayout';
+import LogoutModal from '../../components/LogoutModal';
+
+// Supervisor data type
+interface Supervisor {
+  id: string;
+  name: string;
+  initials: string;
+  office: string;
+}
+
+// Sample supervisor data
+const supervisorData: Supervisor[] = [
+  { id: 'SUP-00101', name: 'William Shakespear', initials: 'WS', office: 'LTO Office – Candon City' },
+];
+
+// ── Shared intent key — imported by AdminSupervisorDetail ──────────────────
+export const SUPERVISOR_NAV_KEY = 'supervisor_nav_intent';
+export type SupervisorNavIntent = { action: 'edit' | 'delete'; supervisorId: string };
 
 const AdminSupervisors: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const history = useHistory();
+
+  const handleConfirm = () => {
+    setIsLoggingOut(true);
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userData');
+    history.push('/login');
+  };
+  const handleCancel = () => setShowModal(false);
+  const handleLogoutComplete = () => setIsLoggingOut(false);
+
+  // Export to CSV function
+  const handleExport = () => {
+    const headers = ['ID', 'Name', 'Office'];
+    const csvContent = [
+      headers.join(','),
+      ...supervisorData.map(s => [
+        s.id,
+        `"${s.name}"`,
+        `"${s.office}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `supervisors_export_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Navigation helpers ────────────────────────────────────────────────────
+  const goView = (id: string) => {
+    history.push('/admin-supervisor-detail');
+  };
+  const goEdit = (id: string) => {
+    const intent: SupervisorNavIntent = { action: 'edit', supervisorId: id };
+    localStorage.setItem(SUPERVISOR_NAV_KEY, JSON.stringify(intent));
+    history.push('/admin-supervisor-detail');
+  };
+  const goDelete = (id: string) => {
+    const intent: SupervisorNavIntent = { action: 'delete', supervisorId: id };
+    localStorage.setItem(SUPERVISOR_NAV_KEY, JSON.stringify(intent));
+    history.push('/admin-supervisor-detail');
+  };
 
   const css = `*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,138 +81,30 @@ const AdminSupervisors: React.FC = () => {
   --brand-mid:    #7a1896;
   --brand-soft:   #f3e6f8;
   --brand-glow:   rgba(95,0,118,.15);
-
   --ink:          #1a1025;
   --ink-2:        #3d3049;
   --ink-3:        #7b6e89;
   --rule:         #ede6f2;
-
   --bg:           #f7f4fb;
   --surface:      #ffffff;
-
   --blue:         #1456cc;
   --orange:       #d95b00;
   --red:          #c0303b;
-
   --r-sm:  6px;
   --r-md:  10px;
   --r-lg:  16px;
   --r-xl:  22px;
   --r-full:9999px;
-
   --sh-sm:  0 1px 3px rgba(0,0,0,.06);
   --sh-md:  0 4px 12px rgba(0,0,0,.08);
   --sh-lg:  0 12px 32px rgba(0,0,0,.10);
-
   --sidebar-w: 252px;
   --ease: cubic-bezier(.4,0,.2,1);
 }
 
 html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
 
-/* ─── SHELL ─────────────────────────────── */
-.shell { display: flex; min-height: 100vh; }
-
-/* ─── SIDEBAR ────────────────────────────── */
-.sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--brand-dark);
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.sidebar-logo {
-  padding: 28px 24px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-.sidebar-logo-mark {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.sidebar-logo-icon {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--brand-mid), #c752f0);
-  border-radius: var(--r-md);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.sidebar-logo-icon svg { stroke: #fff; }
-.sidebar-logo-text {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem; font-weight: 700; color: #fff;
-  letter-spacing: .01em; line-height: 1.2;
-}
-.sidebar-logo-sub {
-  font-size: .7rem; color: rgba(255,255,255,.45);
-  font-weight: 400; letter-spacing: .04em; text-transform: uppercase;
-}
-
-.sidebar-profile {
-  padding: 20px 24px;
-  display: flex; align-items: center; gap: 12px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-.sidebar-avatar {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--brand-mid) 0%, #c752f0 100%);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  font-family: 'Syne', sans-serif;
-  font-size: .95rem; font-weight: 700; color: #fff;
-}
-.sidebar-profile-info { min-width: 0; }
-.sidebar-profile-name {
-  font-size: .9rem; font-weight: 600; color: #fff;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.sidebar-profile-role { font-size: .75rem; color: rgba(255,255,255,.45); }
-
-.sidebar-nav { flex: 1; padding: 16px 12px; }
-.nav-section-label {
-  font-size: .65rem; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.3);
-  padding: 8px 12px 6px;
-}
-.sidebar-nav ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
-.sidebar-nav a {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px;
-  border-radius: var(--r-md);
-  color: rgba(255,255,255,.6);
-  text-decoration: none; font-size: .875rem; font-weight: 500;
-  transition: all .18s var(--ease);
-}
-.sidebar-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
-.sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
-.sidebar-nav a.active .nav-icon { opacity: 1; }
-.nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; }
-
-.sidebar-footer {
-  padding: 12px;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-.sidebar-footer a {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border-radius: var(--r-md);
-  color: rgba(255,255,255,.5); text-decoration: none;
-  font-size: .875rem; font-weight: 500;
-  transition: all .18s var(--ease);
-}
-.sidebar-footer a:hover { background: rgba(0,0,0,.12); color: #ff7070; }
-
-/* ─── MAIN ───────────────────────────────── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-/* topbar */
+/* ─── TOPBAR ─────────────────────────────── */
 .topbar {
   height: 60px;
   background: var(--surface);
@@ -159,8 +119,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   font-size: .85rem; color: var(--ink-3);
 }
 .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
-.topbar-breadcrumb svg { width: 14px; height: 14px; stroke: var(--ink-3); }
-
+.topbar-breadcrumb svg { width: 14px; height: 14px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 .topbar-btn {
   width: 36px; height: 36px;
@@ -171,7 +130,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   cursor: pointer; transition: all .18s var(--ease); color: var(--ink-2);
 }
 .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
-.topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
+.topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ─── PAGE CONTENT ───────────────────────── */
 .page-content { padding: 28px 32px 48px; flex: 1; }
@@ -204,7 +163,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 }
 .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(95,0,118,.35); }
 .btn-primary:active { transform: none; }
-.btn-primary svg { width: 16px; height: 16px; stroke: currentColor; }
+.btn-primary svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 7px;
@@ -216,7 +175,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   font-family: 'DM Sans', sans-serif;
 }
 .btn-ghost:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
-.btn-ghost svg { width: 14px; height: 14px; stroke: currentColor; }
+.btn-ghost svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
 
 /* ─── FILTERS ────────────────────────────── */
 .filters-bar {
@@ -231,7 +190,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .search-wrap { position: relative; flex: 1; max-width: 420px; }
 .search-wrap svg {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px; stroke: var(--ink-3); pointer-events: none;
+  width: 16px; height: 16px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none;
 }
 .search-input {
   width: 100%;
@@ -285,7 +244,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   border: 1px solid rgba(95,0,118,.12);
 }
 
-/* column header */
 .list-col-header {
   display: grid;
   grid-template-columns: 1fr 1fr 100px;
@@ -298,7 +256,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3);
 }
 
-/* rows */
 .supervisors-list { display: flex; flex-direction: column; }
 
 .supervisor-row {
@@ -321,7 +278,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   to   { opacity: 1; transform: none; }
 }
 
-/* identity cell */
 .supervisor-identity {
   display: flex; align-items: center; gap: 14px; min-width: 0;
 }
@@ -341,23 +297,23 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-decoration: none;
   transition: color .15s var(--ease);
+  cursor: pointer;
+  background: none; border: none; padding: 0; font-family: 'DM Sans', sans-serif;
 }
 .supervisor-name:hover { color: var(--brand); }
 .supervisor-id {
   font-size: .72rem; color: var(--ink-3); margin-top: 1px; font-weight: 500;
 }
 
-/* office cell */
 .supervisor-office {
   display: flex; align-items: center; gap: 8px; min-width: 0;
 }
-.supervisor-office svg { width: 14px; height: 14px; stroke: var(--ink-3); flex-shrink: 0; }
+.supervisor-office svg { width: 14px; height: 14px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .office-name {
   font-size: .8125rem; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* actions cell */
 .supervisor-actions { display: flex; align-items: center; gap: 6px; }
 .action-btn {
   width: 34px; height: 34px;
@@ -365,7 +321,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: all .18s var(--ease);
 }
-.action-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+.action-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .action-view   { background: #dbeafe; color: var(--blue); }
 .action-view:hover  { background: var(--blue); color: #fff; transform: scale(1.1); }
 .action-edit   { background: #ffedd5; color: var(--orange); }
@@ -373,16 +329,18 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .action-delete { background: #fee2e2; color: var(--red); }
 .action-delete:hover { background: var(--red); color: #fff; transform: scale(1.1); }
 
-/* ─── RESPONSIVE ─────────────────────────── */
+/* ─── TOOLTIP ───────────────────────────── */
+.action-btn { position: relative; }
+.action-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff;
+  font-size: .72rem; font-weight: 600; white-space: nowrap;
+  padding: 4px 8px; border-radius: var(--r-sm);
+  pointer-events: none; z-index: 20;
+}
+
 @media (max-width: 840px) {
-  :root { --sidebar-w: 60px; }
-  .sidebar-logo-text, .sidebar-logo-sub,
-  .sidebar-profile-info, .nav-label,
-  .sidebar-footer span, .nav-section-label { display: none; }
-  .sidebar-logo { padding: 18px 12px; }
-  .sidebar-logo-mark { justify-content: center; }
-  .sidebar-profile { padding: 12px; justify-content: center; }
-  .sidebar-nav a, .sidebar-footer a { padding: 10px; justify-content: center; gap: 0; }
   .page-content { padding: 20px 16px 40px; }
   .list-col-header { grid-template-columns: 1fr 1fr 80px; }
   .supervisor-row { grid-template-columns: 1fr 1fr 80px; }
@@ -394,254 +352,148 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   .list-col-header { display: none; }
   .supervisor-row { grid-template-columns: 1fr; gap: 10px; }
   .supervisor-actions { justify-content: flex-start; }
-}
-
-/* ─── LOGOUT MODAL ───────────────────────── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(26,16,37,.45);
-  backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
-  animation: fadeIn .2s var(--ease);
-}
-.modal-box {
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  padding: 32px; max-width: 380px; width: 90%;
-  box-shadow: var(--sh-lg); text-align: center;
-  animation: slideUp .25s var(--ease);
-}
-.modal-icon {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: #fee2e2;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px;
-}
-.modal-icon svg { width: 26px; height: 26px; stroke: var(--red); }
-.modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-.modal-msg { font-size: .875rem; color: var(--ink-3); margin-bottom: 24px; }
-.modal-actions { display: flex; gap: 10px; justify-content: center; }
-.modal-btn { padding: 10px 22px; border: none; border-radius: var(--r-md); font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .18s var(--ease); font-family: 'DM Sans', sans-serif; }
-.modal-btn-confirm { background: var(--red); color: #fff; }
-.modal-btn-confirm:hover { background: #a02530; transform: translateY(-1px); }
-.modal-btn-cancel { background: var(--bg); color: var(--ink-2); border: 1px solid var(--rule); }
-.modal-btn-cancel:hover { background: var(--rule); }
-@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }`;
+}`;
 
   return (
-    <>
+    <AdminLayout activeMenu="supervisors">
       <style dangerouslySetInnerHTML={{ __html: css }} />
-      <div className="shell">
 
-        {/* ─── SIDEBAR ─────────────────────────── */}
-        <aside className="sidebar">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-mark">
-              <div className="sidebar-logo-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <div>
-                <div className="sidebar-logo-text">ISPSC OJT</div>
-                <div className="sidebar-logo-sub">Admin Panel</div>
-              </div>
+      {/* ─── TOPBAR ─────────────────────────── */}
+      <div className="topbar">
+        <div className="topbar-breadcrumb">
+          <span>Admin</span>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <span className="crumb-active">Supervisors</span>
+        </div>
+        <div className="topbar-right">
+          <button className="topbar-btn" title="Notifications">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button className="topbar-btn" title="Print" onClick={() => window.print()}>
+            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="page-content">
+
+        {/* page header */}
+        <div className="page-header">
+          <div>
+            <div className="page-header-title">Supervisor Management</div>
+            <div className="page-header-sub">Manage and monitor assigned supervisors and their offices</div>
+          </div>
+          <div className="header-actions">
+            <button className="btn-ghost" onClick={handleExport}>
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+            <button className="btn-primary" onClick={() => history.push('/admin-add-supervisor')}>
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Supervisor
+            </button>
+          </div>
+        </div>
+
+        {/* filters */}
+        <div className="filters-bar">
+          <div className="search-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input className="search-input" type="text" placeholder="Search by name or office…" />
+          </div>
+          <div className="filter-sep"></div>
+          <label className="filter-label" htmlFor="of">Office</label>
+          <select className="filter-select" id="of">
+            <option value="all">All Offices</option>
+            <option value="lto">LTO Office</option>
+            <option value="deped">DepEd Office</option>
+            <option value="mun">Municipal Hall</option>
+          </select>
+        </div>
+
+        {/* supervisors list */}
+        <div className="supervisors-section">
+          <div className="section-head">
+            <div className="section-head-title">
+              Supervisors Directory
+              <span className="count-badge">1 entry</span>
             </div>
+            <button className="btn-ghost">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              View All
+            </button>
           </div>
 
-          <div className="sidebar-profile">
-            <div className="sidebar-avatar">AU</div>
-            <div className="sidebar-profile-info">
-              <div className="sidebar-profile-name">Admin User</div>
-              <div className="sidebar-profile-role">Administrator</div>
-            </div>
+          <div className="list-col-header">
+            <div className="col-label">Supervisor</div>
+            <div className="col-label">Assigned Office</div>
+            <div className="col-label">Actions</div>
           </div>
 
-          <nav className="sidebar-nav">
-            <div className="nav-section-label">Main</div>
-            <ul>
-              <li>
-                <a onClick={() => history.push('/admin-dashboard')}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                  <span className="nav-label">Dashboard</span>
-                </a>
-              </li>
-              <li>
-                <a onClick={() => history.push('/admin-trainees')}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  <span className="nav-label">Trainees</span>
-                </a>
-              </li>
-              <li>
-                <a href="AdminSupervisors.html" className="active">
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                  <span className="nav-label">Supervisors</span>
-                </a>
-              </li>
-              <li>
-                <a onClick={() => history.push('/admin-attendance')}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <span className="nav-label">Attendance</span>
-                </a>
-              </li>
-            </ul>
+          <div className="supervisors-list">
 
-            <div className="nav-section-label" style={{marginTop: '16px'}}>Reports</div>
-            <ul>
-              <li>
-                <a onClick={() => history.push('/admin-reports')}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                  <span className="nav-label">Reports</span>
-                </a>
-              </li>
-              <li>
-                <a onClick={() => history.push('/admin-progress')}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                  <span className="nav-label">Progress</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-
-          <div className="sidebar-footer">
-            <a href="#logout" id="logout-trigger" onClick={(e) => { e.preventDefault(); setShowModal(true); }}>
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span>Logout</span>
-            </a>
-          </div>
-        </aside>
-
-        {/* ─── MAIN CONTENT ─────────────────────── */}
-        <div className="main">
-
-          {/* topbar */}
-          <div className="topbar">
-            <div className="topbar-breadcrumb">
-              <span>Admin</span>
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-              <span className="crumb-active">Supervisors</span>
-            </div>
-            <div className="topbar-right">
-              <button className="topbar-btn" title="Notifications">
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              </button>
-              <button className="topbar-btn" title="Print" onClick={() => window.print()}>
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <div className="page-content">
-
-            {/* page header */}
-            <div className="page-header">
-              <div>
-                <div className="page-header-title">Supervisor Management</div>
-                <div className="page-header-sub">Manage and monitor assigned supervisors and their offices</div>
-              </div>
-              <div className="header-actions">
-                <button className="btn-ghost">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Export
-                </button>
-                <button className="btn-primary">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Add Supervisor
-                </button>
-              </div>
-            </div>
-
-            {/* filters */}
-            <div className="filters-bar">
-              <div className="search-wrap">
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input className="search-input" type="text" placeholder="Search by name or office…" />
-              </div>
-              <div className="filter-sep"></div>
-              <label className="filter-label" htmlFor="of">Office</label>
-              <select className="filter-select" id="of">
-                <option value="all">All Offices</option>
-                <option value="lto">LTO Office</option>
-                <option value="deped">DepEd Office</option>
-                <option value="mun">Municipal Hall</option>
-              </select>
-            </div>
-
-            {/* supervisors section */}
-            <div className="supervisors-section">
-              <div className="section-head">
-                <div className="section-head-title">
-                  Supervisors Directory
-                  <span className="count-badge">1 entry</span>
+            {/* ── Row: William Shakespear / SUP-00101 ── */}
+            <div className="supervisor-row">
+              <div className="supervisor-identity">
+                <div className="supervisor-avatar">WS</div>
+                <div className="supervisor-info">
+                  <button
+                    className="supervisor-name"
+                    onClick={() => goView('SUP-00101')}
+                  >
+                    William Shakespear
+                  </button>
+                  <div className="supervisor-id">SUP-00101</div>
                 </div>
-                <button className="btn-ghost">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                  View All
+              </div>
+
+              <div className="supervisor-office">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span className="office-name">LTO Office – Candon City</span>
+              </div>
+
+              <div className="supervisor-actions">
+                {/* View */}
+                <button
+                  className="action-btn action-view"
+                  title="View"
+                  onClick={() => goView('SUP-00101')}
+                >
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+
+                {/* Edit → navigates to detail with edit intent */}
+                <button
+                  className="action-btn action-edit"
+                  title="Edit"
+                  onClick={() => goEdit('SUP-00101')}
+                >
+                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+
+                {/* Delete → navigates to detail with delete intent */}
+                <button
+                  className="action-btn action-delete"
+                  title="Delete"
+                  onClick={() => goDelete('SUP-00101')}
+                >
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>
               </div>
+            </div>
 
-              {/* column labels */}
-              <div className="list-col-header">
-                <div className="col-label">Supervisor</div>
-                <div className="col-label">Assigned Office</div>
-                <div className="col-label">Actions</div>
-              </div>
-
-              <div className="supervisors-list">
-
-                {/* row 1 */}
-                <div className="supervisor-row">
-                  <div className="supervisor-identity">
-                    <div className="supervisor-avatar">JD</div>
-                    <div className="supervisor-info">
-                      <a href="AdminSupervisorDetail.html" className="supervisor-name">Juan Dela Cruz</a>
-                      <div className="supervisor-id">SUP-00101</div>
-                    </div>
-                  </div>
-                  <div className="supervisor-office">
-                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span className="office-name">LTO Office – Candon City</span>
-                  </div>
-                  <div className="supervisor-actions">
-                    <button className="action-btn action-view" title="View">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </button>
-                    <button className="action-btn action-edit" title="Edit">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    </button>
-                    <button className="action-btn action-delete" title="Delete">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                    </button>
-                  </div>
-                </div>
-
-              </div>{/* /supervisors-list */}
-            </div>{/* /supervisors-section */}
-
-          </div>{/* /page-content */}
-        </div>{/* /main */}
-      </div>{/* /shell */}
-
-      {/* ─── LOGOUT MODAL ─────────────────────── */}
-      <div className="modal-overlay" id="logout-modal" style={{display: showModal ? 'flex' : 'none'}} onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
-        <div className="modal-box">
-          <div className="modal-icon">
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          </div>
-          <div className="modal-title">Sign out?</div>
-          <div className="modal-msg">You'll need to log back in to access the admin panel.</div>
-          <div className="modal-actions">
-            <button className="modal-btn modal-btn-cancel" id="modal-cancel" onClick={() => setShowModal(false)}>Cancel</button>
-            <button className="modal-btn modal-btn-confirm" id="modal-confirm" onClick={() => { window.location.href = '#'; }}>Yes, log out</button>
           </div>
         </div>
       </div>
-    </>
+
+      <LogoutModal
+        isOpen={showModal}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        isLoading={isLoggingOut}
+        onComplete={handleLogoutComplete}
+      />
+    </AdminLayout>
   );
 };
 

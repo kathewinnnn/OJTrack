@@ -64,7 +64,7 @@ const Reports: React.FC = () => {
 
         <div className="rp-container">
 
-          {/* Stats Row */}
+          {/* Stats Row */} <br />
           <div className="rp-stats-row">
             <div className="rp-stat-card rp-stat-total">
               <IonIcon icon={documentTextOutline} className="rp-stat-icon" />

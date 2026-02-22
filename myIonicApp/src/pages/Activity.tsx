@@ -65,7 +65,7 @@ const Activity: React.FC = () => {
 
         <div className="act-container">
 
-          {/* Stats Row */}
+          {/* Stats Row */} <br />
           <div className="act-stats-row">
             <div className="act-stat-card">
               <div className="act-stat-icon-wrap act-icon-hours">

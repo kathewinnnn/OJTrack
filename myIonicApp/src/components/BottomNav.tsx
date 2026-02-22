@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonIcon } from '@ionic/react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { homeOutline, documentOutline, documentTextOutline, barChartOutline, personOutline } from 'ionicons/icons';
 
 interface BottomNavProps {
@@ -8,8 +8,8 @@ interface BottomNavProps {
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab }) => {
-  const history = useHistory();
   const location = useLocation();
+  const history = useHistory();
 
   // Determine active tab from current location if not provided
   const getActiveTab = () => {

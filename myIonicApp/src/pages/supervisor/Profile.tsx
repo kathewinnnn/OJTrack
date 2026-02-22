@@ -9,6 +9,7 @@ import './supervisor.css';
 const Profile: React.FC = () => {
   const history = useHistory();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const stats = [
     { val: '3',   lbl: 'Years Exp.' },
@@ -29,6 +30,24 @@ const Profile: React.FC = () => {
     { icon: notificationsOutline, title: 'Notification Preferences',  sub: 'Manage email and push notifications', action: 'Manage' },
     { icon: settingsOutline,      title: 'Privacy Settings',          sub: 'Control your data and privacy',       action: 'Settings' },
   ];
+
+  // Handle logout confirmation - starts the loading animation
+  const handleLogoutConfirm = () => {
+    setIsLoggingOut(true);
+  };
+
+  // Handle logout cancellation
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
+    setIsLoggingOut(false);
+  };
+
+  // Handle logout complete - cleanup any user session data
+  const handleLogoutComplete = () => {
+    // Clear any session storage or local storage if needed
+    // The navigation to /login will happen in LogoutModal
+    console.log('Logout complete, redirecting to login...');
+  };
 
   return (
     <IonPage>
@@ -127,8 +146,10 @@ const Profile: React.FC = () => {
       <SupervisorBottomNav activeTab="profile" />
       <LogoutModal
         isOpen={showLogoutModal}
-        onConfirm={() => { setShowLogoutModal(false); history.push('/login'); }}
-        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleLogoutCancel}
+        isLoading={isLoggingOut}
+        onComplete={handleLogoutComplete}
       />
     </IonPage>
   );

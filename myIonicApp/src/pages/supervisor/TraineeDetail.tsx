@@ -35,7 +35,19 @@ const TraineeDetail: React.FC = () => {
 
   const trainee = trainees.find(t => t.id === parseInt(id));
   const initials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-  const progressColor = (p: number) => p >= 75 ? 'var(--c-green)' : p >= 50 ? 'var(--c-amber)' : 'var(--c-red)';
+
+  // Solid color per threshold — consistent with Trainees.tsx
+  const progressColor = (p: number) =>
+    p >= 75 ? '#10b981' : p >= 50 ? '#f59e0b' : '#ef4444';
+
+  const progressTrackBg = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.12)' : p >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+
+  const progressGlowDot = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.35)' : p >= 50 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
+
+  const progressBadgeBg = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.1)' : p >= 50 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
 
   if (!trainee) {
     return (
@@ -59,6 +71,8 @@ const TraineeDetail: React.FC = () => {
     { icon: schoolOutline,    label: 'School',          value: trainee.school },
     { icon: locationOutline,  label: 'Address',         value: trainee.address },
   ];
+
+  const color = progressColor(trainee.progress);
 
   return (
     <IonPage>
@@ -95,20 +109,50 @@ const TraineeDetail: React.FC = () => {
                 <p className="sv-card-label">Training Progress</p>
                 <h2 className="sv-card-title">Overall Completion</h2>
               </div>
-              <span className="sv-pct-badge" style={{ color: progressColor(trainee.progress), background: `${progressColor(trainee.progress)}18` }}>
+              {/* % badge — colored text + matching soft bg */}
+              <span
+                className="sv-pct-badge"
+                style={{
+                  color: color,
+                  background: progressBadgeBg(trainee.progress),
+                  border: `1px solid ${color}33`,
+                }}
+              >
                 {trainee.progress}%
               </span>
             </div>
-            <div className="sv-progress-track">
+
+            {/* Track: tinted with same hue as fill */}
+            <div
+              className="sv-progress-track"
+              style={{ background: progressTrackBg(trainee.progress) }}
+            >
               <div
                 className="sv-progress-fill"
-                style={{ width: `${trainee.progress}%`, background: `linear-gradient(90deg, ${progressColor(trainee.progress)}, ${progressColor(trainee.progress)}cc)` }}
+                style={{
+                  width: `${trainee.progress}%`,
+                  // Solid color fill — same hue from 0% to current %
+                  background: `linear-gradient(90deg, ${color}cc, ${color})`,
+                  boxShadow: `0 0 10px ${color}55`,
+                }}
               >
-                <div className="sv-progress-glow" style={{ background: progressColor(trainee.progress) }} />
+                {/* Glow dot at the leading edge */}
+                <div
+                  className="sv-progress-glow"
+                  style={{
+                    background: color,
+                    boxShadow: `0 0 0 4px ${progressGlowDot(trainee.progress)}`,
+                  }}
+                />
               </div>
             </div>
+
             <p className="sv-progress-note">
-              {trainee.progress >= 75 ? '🎉 Excellent progress!' : trainee.progress >= 50 ? '📈 On track, keep going!' : '⚠️ Needs attention'}
+              {trainee.progress >= 75
+                ? '🎉 Excellent progress!'
+                : trainee.progress >= 50
+                ? '📈 On track, keep going!'
+                : '⚠️ Needs attention'}
             </p>
           </div>
 
