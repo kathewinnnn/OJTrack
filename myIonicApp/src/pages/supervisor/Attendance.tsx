@@ -131,7 +131,7 @@ const Attendance: React.FC = () => {
 
         <div className="sv-body">
 
-          {/* Summary Row */}
+          {/* Summary Row */}<br/>
           <div className="sv-stats-grid sv-stats-3">
             <div className="sv-stat-card sv-stat-green">
               <div className="sv-stat-icon-wrap"><IonIcon icon={checkmarkCircleOutline} /></div>

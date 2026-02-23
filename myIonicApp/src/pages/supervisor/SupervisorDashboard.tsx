@@ -33,7 +33,7 @@ const SupervisorDashboard: React.FC = () => {
 
         <div className="sv-body">
 
-          {/* Stats Row */}
+          {/* Stats Row */} <br/>
           <div className="sv-stats-grid">
             <div className="sv-stat-card sv-stat-purple">
               <div className="sv-stat-icon-wrap">

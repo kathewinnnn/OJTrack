@@ -102,7 +102,7 @@ const TraineeDetail: React.FC = () => {
 
         <div className="sv-body">
 
-          {/* Progress Card */}
+          {/* Progress Card */}<br/>
           <div className="sv-card">
             <div className="sv-card-header">
               <div>

@@ -70,7 +70,7 @@ const Trainees: React.FC = () => {
 
         <div className="sv-body">
 
-          {/* Search */}
+          {/* Search */}<br/>
           <div className="sv-search-bar">
             <IonIcon icon={searchOutline} className="sv-search-icon" />
             <input 

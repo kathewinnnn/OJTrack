@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IonPage, IonContent, IonIcon, IonBadge } from '@ionic/react';
 import { personCircleOutline, mailOutline, businessOutline, settingsOutline, cameraOutline, logOutOutline, lockClosedOutline, notificationsOutline, chevronForwardOutline, createOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -6,10 +6,40 @@ import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import LogoutModal from '../../components/LogoutModal';
 import './supervisor.css';
 
+const STORAGE_KEY = 'supervisorProfile';
+
+// Default profile data
+const defaultProfile = {
+  fullName: 'Dr. Kath Montenegro',
+  email: 'kth.mntngr@university.edu',
+  employeeId: 'UIP-2024-001',
+  department: 'Information Technology Department',
+  role: 'Senior IT Supervisor',
+};
+
+// Load profile from localStorage or return default
+const loadProfile = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Error loading profile:', e);
+  }
+  return defaultProfile;
+};
+
 const Profile: React.FC = () => {
   const history = useHistory();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [profile, setProfile] = useState(loadProfile);
+
+  // Refresh profile data when component mounts (in case it was updated)
+  useEffect(() => {
+    setProfile(loadProfile());
+  }, []);
 
   const stats = [
     { val: '3',   lbl: 'Years Exp.' },
@@ -19,10 +49,10 @@ const Profile: React.FC = () => {
   ];
 
   const infoItems = [
-    { icon: personCircleOutline, label: 'Full Name',    value: 'Dr. Kath Montenegro' },
-    { icon: mailOutline,         label: 'Email',        value: 'kth.mntngr@university.edu' },
-    { icon: businessOutline,     label: 'Employee ID',  value: 'UIP-2024-001' },
-    { icon: settingsOutline,     label: 'Role',         value: 'Senior IT Supervisor' },
+    { icon: personCircleOutline, label: 'Full Name',    value: profile.fullName },
+    { icon: mailOutline,         label: 'Email',        value: profile.email },
+    { icon: businessOutline,     label: 'Employee ID',  value: profile.employeeId },
+    { icon: settingsOutline,     label: 'Role',         value: profile.role },
   ];
 
   const menuItems = [
@@ -63,9 +93,9 @@ const Profile: React.FC = () => {
               </div>
               <button className="sv-profile-av-edit"><IonIcon icon={cameraOutline} /></button>
             </div>
-            <p className="sv-profile-name">Dr. Kath Montenegro</p>
-            <p className="sv-profile-role">Senior IT Supervisor</p>
-            <span className="sv-profile-dept-badge">Information Technology Department</span>
+            <p className="sv-profile-name">{profile.fullName}</p>
+            <p className="sv-profile-role">{profile.role}</p>
+            <span className="sv-profile-dept-badge">{profile.department}</span>
             <div className="sv-profile-active-row">
               <span className="sv-profile-active-dot" />
               Active Supervisor
@@ -75,7 +105,7 @@ const Profile: React.FC = () => {
 
         <div className="sv-body sv-body-account">
 
-          {/* Stats Row */}
+          {/* Stats Row */}<br/>
           <div className="sv-profile-stats">
             {stats.map((s, i) => (
               <React.Fragment key={i}>
