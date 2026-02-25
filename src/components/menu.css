@@ -1,0 +1,81 @@
+/* Admin Menu Styles */
+
+.menu-header {
+  --background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  --color: white;
+  --ion-toolbar-background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}
+
+.menu-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.menu-content {
+  --background: #f8f9fa;
+  --ion-background-color: #f8f9fa;
+}
+
+.admin-menu-list {
+  --background: transparent;
+  padding: 0.5rem 0;
+}
+
+.menu-item {
+  --background: transparent;
+  --color: #1f2937;
+  --border-color: transparent;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+  margin: 0.25rem 0.5rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item:hover {
+  --background: rgba(79, 70, 229, 0.08);
+  --color: #4f46e5;
+}
+
+.menu-item ion-icon {
+  margin-right: 0.75rem;
+  font-size: 22px;
+  color: #4f46e5;
+}
+
+.menu-item:hover ion-icon {
+  color: #4338ca;
+}
+
+.menu-item.logout {
+  --color: #dc2626;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.menu-item.logout:hover {
+  --background: rgba(220, 38, 38, 0.08);
+}
+
+.menu-item.logout ion-icon {
+  color: #dc2626;
+}
+
+.menu-item.logout:hover ion-icon {
+  color: #b91c1c;
+}
+
+/* Active state for menu item */
+.menu-item.ion-activated {
+  --background: rgba(79, 70, 229, 0.1);
+  --color: #4f46e5;
+  font-weight: 600;
+}
+
+.menu-item.ion-activated ion-icon {
+  color: #4338ca;
+}

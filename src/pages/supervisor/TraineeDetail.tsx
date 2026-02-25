@@ -1,0 +1,220 @@
+import React from 'react';
+import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import { useParams, useHistory } from 'react-router-dom';
+import { arrowBackOutline, calendarOutline, documentTextOutline, mailOutline, callOutline, schoolOutline, locationOutline, personOutline } from 'ionicons/icons';
+import SupervisorBottomNav from '../../components/SupervisorBottomNav';
+import './supervisor.css';
+
+interface Trainee {
+  id: number;
+  name: string;
+  course: string;
+  school: string;
+  status: string;
+  progress: number;
+  email: string;
+  phone: string;
+  startDate: string;
+  supervisorNotes: string;
+  birthday: string;
+  age: number;
+  address: string;
+  section: string;
+  profilePicture: string;
+}
+
+const TraineeDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const history = useHistory();
+
+  const trainees: Trainee[] = [
+    { id: 1, name: 'Katherine Guzman', course: 'BSIT', school: 'ISPSC', status: 'Active', progress: 80, email: 'kathewinnnn@gmail.com', phone: '123-456-7890', startDate: '2026-01-15', supervisorNotes: 'Excellent performance in web development tasks.', birthday: '2005-04-05', age: 20, address: 'Pilar, Abra', section: 'A', profilePicture: '' },
+    { id: 2, name: 'Samantha Lumpaodan', course: 'BSIT', school: 'ISPSC', status: 'Active', progress: 65, email: 'samantha@gmail.com', phone: '123-456-7891', startDate: '2026-01-15', supervisorNotes: 'Needs improvement in database design.', birthday: '2005-10-06', age: 20, address: 'Sta Maria', section: 'A', profilePicture: '' },
+    { id: 3, name: 'Raffy Romero', course: 'BSIT', school: 'ISPSC', status: 'Active', progress: 50, email: 'raffy@gmail.com', phone: '123-456-7892', startDate: '2026-01-15', supervisorNotes: 'Excellent performance in IoT tasks.', birthday: '2005-12-10', age: 20, address: 'Sta Maria', section: 'A', profilePicture: '' },
+  ];
+
+  const trainee = trainees.find(t => t.id === parseInt(id));
+  const initials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+  // Solid color per threshold — consistent with Trainees.tsx
+  const progressColor = (p: number) =>
+    p >= 75 ? '#10b981' : p >= 50 ? '#f59e0b' : '#ef4444';
+
+  const progressTrackBg = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.12)' : p >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+
+  const progressGlowDot = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.35)' : p >= 50 ? 'rgba(245,158,11,0.35)' : 'rgba(239,68,68,0.35)';
+
+  const progressBadgeBg = (p: number) =>
+    p >= 75 ? 'rgba(16,185,129,0.1)' : p >= 50 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
+
+  if (!trainee) {
+    return (
+      <IonPage>
+        <IonContent className="sv-content">
+          <div className="sv-body" style={{ paddingTop: 40 }}>
+            <div className="sv-card" style={{ textAlign: 'center', padding: 32 }}>
+              <p style={{ color: 'var(--c-text-muted)' }}>Trainee not found.</p>
+            </div>
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
+
+  const details = [
+    { icon: calendarOutline,  label: 'Birthday',        value: trainee.birthday },
+    { icon: personOutline,    label: 'Age',             value: `${trainee.age} years old` },
+    { icon: mailOutline,      label: 'Email',           value: trainee.email },
+    { icon: callOutline,      label: 'Contact Number',  value: trainee.phone },
+    { icon: schoolOutline,    label: 'School',          value: trainee.school },
+    { icon: locationOutline,  label: 'Address',         value: trainee.address },
+  ];
+
+  const color = progressColor(trainee.progress);
+
+  return (
+    <IonPage>
+      <IonContent fullscreen className="sv-content">
+
+        {/* Hero */}
+        <div className="sv-hero sv-hero-detail">
+          <div className="sv-hero-bg" />
+          <div className="sv-hero-inner">
+            <button className="sv-back-btn" onClick={() => history.goBack()}>
+              <IonIcon icon={arrowBackOutline} />
+              Back
+            </button>
+            <div className="sv-detail-profile">
+              <div className="sv-detail-avatar">{initials(trainee.name)}</div>
+              <div className="sv-detail-profile-info">
+                <h1 className="sv-detail-name">{trainee.name}</h1>
+                <p className="sv-detail-meta">{trainee.course} · Section {trainee.section}</p>
+                <span className={`sv-detail-status ${trainee.status === 'Active' ? 'sv-status-active' : 'sv-status-inactive'}`}>
+                  <span className="sv-status-dot" />
+                  {trainee.status}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="sv-body">
+
+          {/* Progress Card */}<br/>
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Training Progress</p>
+                <h2 className="sv-card-title">Overall Completion</h2>
+              </div>
+              {/* % badge — colored text + matching soft bg */}
+              <span
+                className="sv-pct-badge"
+                style={{
+                  color: color,
+                  background: progressBadgeBg(trainee.progress),
+                  border: `1px solid ${color}33`,
+                }}
+              >
+                {trainee.progress}%
+              </span>
+            </div>
+
+            {/* Track: tinted with same hue as fill */}
+            <div
+              className="sv-progress-track"
+              style={{ background: progressTrackBg(trainee.progress) }}
+            >
+              <div
+                className="sv-progress-fill"
+                style={{
+                  width: `${trainee.progress}%`,
+                  // Solid color fill — same hue from 0% to current %
+                  background: `linear-gradient(90deg, ${color}cc, ${color})`,
+                  boxShadow: `0 0 10px ${color}55`,
+                }}
+              >
+                {/* Glow dot at the leading edge */}
+                <div
+                  className="sv-progress-glow"
+                  style={{
+                    background: color,
+                    boxShadow: `0 0 0 4px ${progressGlowDot(trainee.progress)}`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <p className="sv-progress-note">
+              {trainee.progress >= 75
+                ? '🎉 Excellent progress!'
+                : trainee.progress >= 50
+                ? '📈 On track, keep going!'
+                : '⚠️ Needs attention'}
+            </p>
+          </div>
+
+          {/* Student Details */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Personal Information</p>
+                <h2 className="sv-card-title">Student Details</h2>
+              </div>
+            </div>
+            <div className="sv-detail-list">
+              {details.map((d, i) => (
+                <div key={i} className="sv-detail-item">
+                  <div className="sv-detail-item-icon">
+                    <IonIcon icon={d.icon} />
+                  </div>
+                  <div className="sv-detail-item-text">
+                    <p className="sv-detail-item-lbl">{d.label}</p>
+                    <p className="sv-detail-item-val">{d.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Supervisor Notes */}
+          <div className="sv-card sv-notes-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Supervisor Notes</p>
+                <h2 className="sv-card-title">Observations</h2>
+              </div>
+            </div>
+            <p className="sv-notes-text">{trainee.supervisorNotes}</p>
+          </div>
+
+          {/* Actions */}
+          <div className="sv-card">
+            <div className="sv-card-header">
+              <div>
+                <p className="sv-card-label">Navigate To</p>
+                <h2 className="sv-card-title">Supervisor Actions</h2>
+              </div>
+            </div>
+            <div className="sv-action-btns-grid">
+              <button className="sv-nav-action-btn sv-nav-purple" onClick={() => history.push('/attendance')}>
+                <div className="sv-nav-btn-icon"><IonIcon icon={calendarOutline} /></div>
+                <span>View Attendance</span>
+              </button>
+              <button className="sv-nav-action-btn sv-nav-dark" onClick={() => history.push('/supervisor-reports')}>
+                <div className="sv-nav-btn-icon"><IonIcon icon={documentTextOutline} /></div>
+                <span>Check Reports</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </IonContent>
+      <SupervisorBottomNav activeTab="trainees" />
+    </IonPage>
+  );
+};
+
+export default TraineeDetail;

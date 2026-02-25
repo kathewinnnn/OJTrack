@@ -1,0 +1,511 @@
+/* Admin Trainee Detail Page Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+}
+.admin-trainee-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #faf9ff 0%, #f0e6f7 50%, #e8f4fd 100%);
+  min-height: 100vh;
+}
+
+/* Navigation */
+.breadcrumb-nav {
+  margin-bottom: 2rem;
+}
+
+.breadcrumb-link {
+  color: #5f0076;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #f0e6f7;
+  transition: all 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  background: #f8f6ff;
+  transform: translateX(-2px);
+}
+
+/* Page Header */
+.detail-page-header {
+  background: linear-gradient(135deg, #fff 0%, #f8f6ff 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 16px rgba(95,0,118,0.08);
+  border: 1px solid #f0e6f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.trainee-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.trainee-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5f0076 0%, #4a4a4a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.trainee-basic-info h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #5f0076 0%, #4a4a4a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.trainee-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.trainee-id {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge.completed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-secondary, .btn-danger {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+}
+
+/* Tab Navigation */
+.detail-tabs {
+  display: flex;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 12px rgba(95,0,118,0.06);
+  border: 1px solid #f0e6f7;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 1rem 2rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background: #f8f6ff;
+  color: #5f0076;
+}
+
+.tab-button.active {
+  background: #5f0076;
+  color: white;
+  box-shadow: 0 2px 8px rgba(95,0,118,0.3);
+}
+
+/* Tab Content */
+.tab-content {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(95,0,118,0.08);
+  border: 1px solid #f0e6f7;
+  overflow: hidden;
+}
+
+/* Detail Sections */
+.detail-section {
+  padding: 2rem;
+  border-bottom: 1px solid #f0e6f7;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title:before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: #5f0076;
+  border-radius: 2px;
+}
+
+/* Information Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: #4a4a4a;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.contact-link {
+  color: #5f0076;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+/* Progress Section */
+.progress-overview {
+  margin-bottom: 2rem;
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f6ff;
+  border-radius: 12px;
+  border: 1px solid #f0e6f7;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5f0076;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-bar-container {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5f0076 0%, #4a4a4a 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Skills Grid */
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.skill-tag {
+  padding: 0.5rem 1rem;
+  background: #f0e6f7;
+  color: #5f0076;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Achievements List */
+.achievements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f6ff;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #f0e6f7;
+}
+
+.achievement-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Documents Grid */
+.documents-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.document-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f6ff;
+  border-radius: 12px;
+  border: 1px solid #f0e6f7;
+  transition: all 0.2s ease;
+}
+
+.document-item:hover {
+  background: #f0e6f7;
+  transform: translateY(-2px);
+}
+
+.document-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.document-info {
+  flex: 1;
+}
+
+.document-name {
+  display: block;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin-bottom: 0.25rem;
+}
+
+.document-date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.document-action {
+  padding: 0.5rem 1rem;
+  background: #5f0076;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.document-action:hover {
+  background: #4a4a4a;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .detail-page-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-trainee-detail-page {
+    padding: 1rem;
+  }
+
+  .detail-page-header {
+    padding: 1.5rem;
+  }
+
+  .trainee-basic-info h1 {
+    font-size: 1.8rem;
+  }
+
+  .detail-tabs {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    padding: 0.75rem 1rem;
+  }
+
+  .detail-section {
+    padding: 1.5rem;
+  }
+
+  .progress-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .document-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-secondary, .btn-danger {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .trainee-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+  }
+
+  .info-value {
+    font-size: 1rem;
+  }
+}

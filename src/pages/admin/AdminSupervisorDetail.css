@@ -1,0 +1,116 @@
+/* Admin Supervisor Detail Styles */
+.admin-supervisor-detail-page {
+  padding: 2rem;
+  background: linear-gradient(120deg, #f4f6fa 60%, #e6eaff 100%);
+  min-height: 100vh;
+}
+
+.admin-supervisor-detail-header {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #232946;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.supervisor-detail-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,87,255,0.08);
+  margin-bottom: 2rem;
+  border: 1.5px solid #e6eaff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.supervisor-detail-card:before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, #5f0076 0%, #4a4a4a 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.supervisor-detail-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,87,255,0.13);
+}
+
+.supervisor-detail-card .card-header {
+  padding: 1rem;
+}
+
+.supervisor-detail-card .card-title {
+  color: #4a4a4a;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.supervisor-detail-card .card-content {
+  padding: 1rem;
+}
+
+.supervisor-detail-card p {
+  font-size: 1.1rem;
+  color: #232946;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+.supervisor-detail-card strong {
+  color: #5f0076;
+  font-weight: 600;
+}
+
+.supervisor-detail-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.supervisor-detail-actions .btn {
+  border-radius: 8px;
+  padding: 0.5rem 2rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.supervisor-detail-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,87,255,0.2);
+}
+
+.edit-btn {
+  background-color: #5f0076;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .admin-supervisor-detail-page {
+    padding: 1rem;
+  }
+  .admin-supervisor-detail-header {
+    font-size: 1.8rem;
+  }
+  .supervisor-detail-card {
+    margin-bottom: 1.5rem;
+  }
+  .supervisor-detail-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  .supervisor-detail-actions .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}

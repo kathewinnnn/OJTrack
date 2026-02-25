@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supervisor Detail — ISPSC OJT Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #5f0076;
+      --brand-dark:  #3d004c;
+      --brand-mid:   #7a1896;
+      --brand-soft:  #f3e6f8;
+      --brand-glow:  rgba(95,0,118,.15);
+
+      --ink:    #1a1025;
+      --ink-2:  #3d3049;
+      --ink-3:  #7b6e89;
+      --rule:   #ede6f2;
+
+      --bg:      #f7f4fb;
+      --surface: #ffffff;
+
+      --ok:     #0d7a55;
+      --ok-bg:  #d6f4e9;
+      --red:    #c0303b;
+
+      --r-sm:  6px;
+      --r-md:  10px;
+      --r-lg:  16px;
+      --r-xl:  22px;
+      --r-full:9999px;
+
+      --sh-sm: 0 1px 3px rgba(0,0,0,.06);
+      --sh-md: 0 4px 12px rgba(0,0,0,.08);
+
+      --sidebar-w: 252px;
+      --ease: cubic-bezier(.4,0,.2,1);
+    }
+
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
+
+    .shell { display: flex; min-height: 100vh; }
+
+    /* ─── SIDEBAR ──────────────────── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: var(--brand-dark);
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; z-index: 10;
+    }
+    .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar-logo-mark { display: flex; align-items: center; gap: 10px; }
+    .sidebar-logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--brand-mid), #c752f0);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sidebar-logo-icon svg { stroke: #fff; width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sidebar-logo-text { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: .01em; line-height: 1.2; }
+    .sidebar-logo-sub { font-size: .7rem; color: rgba(255,255,255,.45); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+    .sidebar-profile { padding: 20px 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand-mid), #c752f0);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700; color: #fff;
+    }
+    .sidebar-profile-name { font-size: .9rem; font-weight: 600; color: #fff; }
+    .sidebar-profile-role { font-size: .75rem; color: rgba(255,255,255,.45); }
+    .sidebar-nav { flex: 1; padding: 16px 12px; }
+    .nav-section-label { font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.3); padding: 8px 12px 6px; }
+    .sidebar-nav ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: var(--r-md);
+      color: rgba(255,255,255,.6); text-decoration: none;
+      font-size: .875rem; font-weight: 500;
+      transition: all .18s var(--ease);
+    }
+    .sidebar-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
+    .nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sidebar-nav a.active .nav-icon { opacity: 1; }
+    .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+    .sidebar-footer a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: var(--r-md);
+      color: rgba(255,255,255,.5); text-decoration: none;
+      font-size: .875rem; font-weight: 500; transition: all .18s var(--ease);
+    }
+    .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
+
+    /* ─── MAIN ───────────────────── */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    .topbar {
+      height: 60px; background: var(--surface);
+      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; position: sticky; top: 0; z-index: 5;
+      box-shadow: var(--sh-sm);
+    }
+    .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
+    .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
+    .topbar-breadcrumb svg { width: 14px; height: 14px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; }
+    .topbar-breadcrumb a { color: var(--ink-3); text-decoration: none; transition: color .15s; }
+    .topbar-breadcrumb a:hover { color: var(--brand); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-date { font-size: .8125rem; font-weight: 600; color: var(--brand); background: var(--brand-soft); padding: 6px 14px; border-radius: var(--r-full); border: 1px solid rgba(95,0,118,.12); }
+    .topbar-btn { width: 36px; height: 36px; border-radius: var(--r-md); border: 1px solid var(--rule); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .18s var(--ease); }
+    .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); }
+    .topbar-btn svg { width: 18px; height: 18px; stroke: var(--ink-2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .page-content { padding: 28px 32px 48px; flex: 1; }
+
+    /* back link */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: var(--ink-3); text-decoration: none; font-size: .85rem; font-weight: 500;
+      padding: 6px 12px 6px 8px; border-radius: var(--r-md);
+      border: 1px solid var(--rule); background: var(--surface);
+      transition: all .18s var(--ease); margin-bottom: 24px;
+      box-shadow: var(--sh-sm);
+    }
+    .back-link:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); transform: translateX(-2px); }
+    .back-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ─── PROFILE HEADER ──────────── */
+    .profile-header {
+      background: var(--surface);
+      border: 1px solid var(--rule); border-radius: var(--r-xl);
+      padding: 28px 32px; margin-bottom: 24px;
+      box-shadow: var(--sh-sm);
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      position: relative; overflow: hidden;
+      animation: fadeUp .3s var(--ease) both;
+    }
+    .profile-header::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--brand) 0%, #c752f0 100%);
+    }
+    .profile-left { display: flex; align-items: center; gap: 20px; }
+    .profile-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-family: 'Syne', sans-serif;
+      font-size: 1.5rem; font-weight: 800; color: #fff;
+      box-shadow: 0 4px 16px var(--brand-glow);
+    }
+    .profile-name { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; margin-bottom: 6px; }
+    .profile-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .profile-id { font-size: .8rem; font-weight: 600; color: var(--ink-3); background: var(--bg); padding: 4px 10px; border-radius: var(--r-full); border: 1px solid var(--rule); }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: var(--r-full); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status-active { background: var(--ok-bg); color: var(--ok); }
+    .status-active::before { background: var(--ok); }
+
+    .profile-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-edit, .btn-del {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: var(--r-md); border: none;
+      font-size: .85rem; font-weight: 600; cursor: pointer;
+      transition: all .18s var(--ease); font-family: 'DM Sans', sans-serif;
+    }
+    .btn-edit { background: var(--bg); color: var(--ink-2); border: 1px solid var(--rule); }
+    .btn-edit:hover { background: var(--brand-soft); color: var(--brand); border-color: var(--brand-glow); transform: translateY(-1px); }
+    .btn-del { background: #fee2e2; color: var(--red); border: 1px solid #fecaca; }
+    .btn-del:hover { background: var(--red); color: #fff; transform: translateY(-1px); }
+    .btn-edit svg, .btn-del svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ─── TWO-COLUMN LAYOUT ──────── */
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      animation: fadeUp .3s .08s var(--ease) both;
+    }
+
+    /* ─── CARDS ──────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--rule); border-radius: var(--r-xl);
+      box-shadow: var(--sh-sm); overflow: hidden;
+    }
+
+    .card-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px 24px; border-bottom: 1px solid var(--rule);
+    }
+    .card-accent { width: 3px; height: 18px; background: var(--brand); border-radius: 2px; flex-shrink: 0; }
+    .card-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--ink); }
+
+    .card-body { padding: 24px; }
+
+    /* ─── INFO GRID ──────────────── */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .info-grid.single { grid-template-columns: 1fr; }
+    .info-item { display: flex; flex-direction: column; gap: 4px; }
+    .info-item.span-full { grid-column: 1 / -1; }
+    .info-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+    .info-value { font-size: .9375rem; font-weight: 500; color: var(--ink); line-height: 1.4; }
+    .info-link { color: var(--brand); text-decoration: none; font-weight: 600; }
+    .info-link:hover { text-decoration: underline; }
+
+    /* ─── TRAINEE LIST ────────────── */
+    .trainee-list { display: flex; flex-direction: column; gap: 10px; }
+    .trainee-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: var(--r-md);
+      border: 1px solid var(--rule); background: var(--bg);
+      transition: all .18s var(--ease);
+    }
+    .trainee-row:hover { background: var(--brand-soft); border-color: var(--brand-glow); transform: translateX(2px); }
+    .trainee-row-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-mid));
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-family: 'Syne', sans-serif;
+      font-size: .72rem; font-weight: 700; color: #fff;
+      box-shadow: 0 2px 6px var(--brand-glow);
+    }
+    .trainee-row-info { flex: 1; min-width: 0; }
+    .trainee-row-name { font-size: .875rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trainee-row-id { font-size: .75rem; color: var(--ink-3); font-weight: 500; }
+
+    /* ─── STATS MINI ─────────────── */
+    .stats-mini { display: flex; flex-direction: column; gap: 10px; padding-bottom: 4px; }
+    .stat-mini-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-radius: var(--r-md);
+      background: var(--bg); border: 1px solid var(--rule);
+    }
+    .stat-mini-label { font-size: .8rem; color: var(--ink-3); font-weight: 500; }
+    .stat-mini-val { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--brand); }
+
+    /* ─── ANIMATIONS ─────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ─── RESPONSIVE ─────────────── */
+    @media (max-width: 1024px) {
+      .detail-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 840px) {
+      :root { --sidebar-w: 60px; }
+      .sidebar-logo-text, .sidebar-logo-sub,
+      .sidebar-profile .sidebar-profile-name,
+      .sidebar-profile .sidebar-profile-role,
+      .nav-label, .sidebar-footer span,
+      .nav-section-label { display: none; }
+      .sidebar-logo { padding: 18px 12px; }
+      .sidebar-logo-mark { justify-content: center; }
+      .sidebar-profile { padding: 12px; justify-content: center; }
+      .sidebar-nav a, .sidebar-footer a { padding: 10px; justify-content: center; gap: 0; }
+      .page-content { padding: 20px 16px 40px; }
+    }
+    @media (max-width: 640px) {
+      .profile-header { flex-direction: column; align-items: flex-start; }
+      .profile-actions { width: 100%; }
+      .btn-edit, .btn-del { flex: 1; justify-content: center; }
+      .info-grid { grid-template-columns: 1fr; }
+      .page-content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ─── SIDEBAR ─────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-mark">
+          <div class="sidebar-logo-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div class="sidebar-logo-text">ISPSC OJT</div>
+            <div class="sidebar-logo-sub">Admin Panel</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-profile">
+        <div class="sidebar-avatar">AU</div>
+        <div>
+          <div class="sidebar-profile-name">Admin User</div>
+          <div class="sidebar-profile-role">Administrator</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <ul>
+          <li><a href="AdminDashboard.html"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-label">Dashboard</span></a></li>
+          <li><a href="AdminTrainees.html"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-label">Trainees</span></a></li>
+          <li><a href="AdminSupervisors.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span class="nav-label">Supervisors</span></a></li>
+          <li><a href="AdminAttendance.html"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="nav-label">Attendance</span></a></li>
+        </ul>
+        <div class="nav-section-label" style="margin-top:16px">Reports</div>
+        <ul>
+          <li><a href="AdminReports.html"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span class="nav-label">Reports</span></a></li>
+          <li><a href="AdminProgress.html"><svg class="nav-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="nav-label">Progress</span></a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="#logout">
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ─── MAIN ────────────────────────── -->
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">
+          <a href="AdminDashboard.html">Admin</a>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <a href="AdminSupervisors.html">Supervisors</a>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="crumb-active">Juan Dela Cruz</span>
+        </div>
+        <div class="topbar-right">
+          <span class="topbar-date">Feb 17, 2026</span>
+          <button class="topbar-btn" title="Notifications">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <a href="AdminSupervisors.html" class="back-link">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Supervisors
+        </a>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <div class="profile-left">
+            <div class="profile-avatar">JD</div>
+            <div>
+              <div class="profile-name">Juan Dela Cruz</div>
+              <div class="profile-meta">
+                <span class="profile-id">LTO Office — Candon City</span>
+                <span class="status-pill status-active">Active</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="btn-edit">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button class="btn-del">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="detail-layout">
+
+          <!-- Left: info cards -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-accent"></div>
+                <div class="card-title">Personal Information</div>
+              </div>
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">Juan Dela Cruz</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Birthday</span>
+                    <span class="info-value">May 15, 1980 · 44 years old</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <a href="mailto:juan.delacruz@example.com" class="info-value info-link">juan.delacruz@example.com</a>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Contact Number</span>
+                    <a href="tel:09123456789" class="info-value info-link">09123456789</a>
+                  </div>
+                  <div class="info-item span-full">
+                    <span class="info-label">Address</span>
+                    <span class="info-value">Candon City, Ilocos Sur</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-accent"></div>
+                <div class="card-title">Office Assignment</div>
+              </div>
+              <div class="card-body">
+                <div class="info-grid">
+                  <div class="info-item span-full">
+                    <span class="info-label">Office</span>
+                    <span class="info-value">LTO Office — Candon City</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: sidebar cards -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-accent"></div>
+                <div class="card-title">Quick Stats</div>
+              </div>
+              <div class="card-body">
+                <div class="stats-mini">
+                  <div class="stat-mini-item">
+                    <span class="stat-mini-label">Assigned Trainees</span>
+                    <span class="stat-mini-val">1</span>
+                  </div>
+                  <div class="stat-mini-item">
+                    <span class="stat-mini-label">Years of Service</span>
+                    <span class="stat-mini-val">12 yrs</span>
+                  </div>
+                  <div class="stat-mini-item">
+                    <span class="stat-mini-label">Status</span>
+                    <span class="stat-mini-val" style="color: var(--ok); font-size:.85rem;">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-accent"></div>
+                <div class="card-title">Assigned Trainees</div>
+              </div>
+              <div class="card-body">
+                <div class="trainee-list">
+                  <div class="trainee-row">
+                    <div class="trainee-row-avatar">KG</div>
+                    <div class="trainee-row-info">
+                      <div class="trainee-row-name">Katherine Mae Guzman</div>
+                      <div class="trainee-row-id">A23-00502</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+/* Admin Supervisors Styles */
+.admin-supervisors-container {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(35,41,70,0.07);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.admin-supervisors-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #232946;
+  margin-bottom: 1.5rem;
+}
+.admin-supervisors-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.admin-supervisors-table th, .admin-supervisors-table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+.admin-supervisors-table th {
+  background: #f4f6fa;
+  color: #232946;
+  font-weight: 600;
+}
+.admin-supervisors-table tr:nth-child(even) {
+  background: #f9fafc;
+}
+.admin-supervisors-table tr:hover {
+  background: #e6eaff;
+}
+.admin-supervisor-add-btn {
+  background: #0057ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  transition: background 0.2s;
+}
+.admin-supervisor-add-btn:hover {
+  background: #003eaa;
+}
