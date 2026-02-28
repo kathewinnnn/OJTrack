@@ -18,8 +18,6 @@ const Dashboard: React.FC<DashboardProps> = () => {
     // Use history.pushState for SPA navigation
     window.history.pushState({ path: route }, '', route);
     
-    // Also manually update the parent frame's URL if in iframe
-    // This helps in mobile simulators that use iframes
     try {
       if (window.self !== window.top) {
         const parentWindow = window.parent;
