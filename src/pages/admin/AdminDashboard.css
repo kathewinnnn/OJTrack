@@ -43,7 +43,7 @@
 html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
 
 /* ─── SHELL ─────────────────────────────── */
-.shell { display: flex; min-height: 100vh; }
+.shell { display: flex; height: 100vh; overflow: hidden; }
 
 /* ─── SIDEBAR ────────────────────────────── */
 .sidebar {
@@ -57,7 +57,14 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   height: 100vh;
   overflow-y: auto;
   z-index: 10;
+  /* sidebar custom scrollbar – only shows when sidebar content overflows */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 99px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
 
 .sidebar-logo {
   padding: 28px 24px 20px;
@@ -151,11 +158,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   font-size: .875rem;
   font-weight: 500;
   transition: all .18s var(--ease);
+  cursor: pointer;
 }
 .sidebar-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
-    .nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .sidebar-nav a.active .nav-icon { opacity: 1; }
+.sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
+.nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sidebar-nav a.active .nav-icon { opacity: 1; }
 
 .sidebar-footer {
   padding: 12px;
@@ -176,9 +184,18 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
 
 /* ─── MAIN ───────────────────────────────── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* .main fills remaining width and is itself a flex column.
+   The sticky topbar stays at top; .page-scroll-area below it scrolls. */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;         /* fill shell height */
+  overflow: hidden;      /* children handle their own scroll */
+}
 
-/* topbar */
+/* ─── TOPBAR (sticky inside .main) ──────── */
 .topbar {
   height: 60px;
   background: var(--surface);
@@ -187,8 +204,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;        /* never shrink */
   z-index: 5;
   box-shadow: var(--sh-sm);
 }
@@ -225,8 +241,28 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
+/* ─── SCROLLABLE CONTENT AREA ───────────── */
+/* This div sits below the topbar and scrolls when content overflows */
+.page-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  /* Scrollbar only appears when content exceeds available height */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.22) transparent;
+}
+.page-scroll-area::-webkit-scrollbar { width: 6px; }
+.page-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.page-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(95,0,118,.22);
+  border-radius: 99px;
+}
+.page-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.45); }
+
 /* ─── PAGE CONTENT ───────────────────────── */
-.page-content { padding: 28px 32px 48px; flex: 1; }
+.page-content { padding: 28px 32px 48px; }
 
 /* page header */
 .page-header {
@@ -356,7 +392,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .btn-ghost:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .btn-ghost svg { width: 14px; height: 14px; stroke: currentColor; }
 
-/* column header */
 .list-col-header {
   display: grid;
   grid-template-columns: 1fr 1.4fr 140px;
@@ -373,7 +408,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   color: var(--ink-3);
 }
 
-/* activity rows */
 .activity-list { display: flex; flex-direction: column; }
 .activity-row {
   display: grid;
@@ -396,12 +430,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   to   { opacity: 1; transform: none; }
 }
 
-/* user cell */
-.row-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.row-user { display: flex; align-items: center; gap: 12px; }
 .row-avatar {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -412,39 +441,20 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   font-size: .75rem; font-weight: 700; color: #fff;
   box-shadow: 0 2px 6px rgba(95,0,118,.2);
 }
-.row-user-name {
-  font-size: .875rem;
-  font-weight: 600;
-  color: var(--ink);
-}
+.row-user-name { font-size: .875rem; font-weight: 600; color: var(--ink); }
 
-/* action cell */
-.row-action {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .8375rem;
-  color: var(--ink-2);
-}
+.row-action { display: flex; align-items: center; gap: 8px; font-size: .8375rem; color: var(--ink-2); }
 .action-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: var(--r-full);
-  font-size: .72rem;
-  font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: var(--r-full);
+  font-size: .72rem; font-weight: 600;
 }
 .action-pill svg { width: 11px; height: 11px; stroke: currentColor; }
-.pill-login   { background: #dbeafe; color: var(--blue); }
-.pill-update  { background: #ffedd5; color: var(--orange); }
-.pill-report  { background: var(--ok-bg); color: var(--ok); }
+.pill-login  { background: #dbeafe; color: var(--blue); }
+.pill-update { background: #ffedd5; color: var(--orange); }
+.pill-report { background: var(--ok-bg); color: var(--ok); }
 
-/* date cell */
-.row-date {
-  display: flex; align-items: center; gap: 6px;
-  font-size: .8rem; color: var(--ink-3); font-weight: 500;
-}
+.row-date { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--ink-3); font-weight: 500; }
 .row-date svg { width: 13px; height: 13px; stroke: currentColor; }
 
 /* ─── RESPONSIVE ─────────────────────────── */
@@ -462,6 +472,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   .sidebar-profile { padding: 12px; justify-content: center; }
   .sidebar-nav a, .sidebar-footer a { padding: 10px; justify-content: center; gap: 0; }
   .page-content { padding: 20px 16px 40px; }
+  .topbar { padding: 0 16px; }
   .list-col-header { grid-template-columns: 1fr 1fr 110px; }
   .activity-row { grid-template-columns: 1fr 1fr 110px; }
 }
@@ -497,21 +508,10 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   margin: 0 auto 16px;
 }
 .modal-icon svg { width: 26px; height: 26px; stroke: var(--red); }
-.modal-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.2rem; font-weight: 700; color: var(--ink);
-  margin-bottom: 8px;
-}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
 .modal-msg { font-size: .875rem; color: var(--ink-3); margin-bottom: 24px; }
 .modal-actions { display: flex; gap: 10px; justify-content: center; }
-.modal-btn {
-  padding: 10px 22px;
-  border: none; border-radius: var(--r-md);
-  font-size: .875rem; font-weight: 600;
-  cursor: pointer;
-  transition: all .18s var(--ease);
-  font-family: 'DM Sans', sans-serif;
-}
+.modal-btn { padding: 10px 22px; border: none; border-radius: var(--r-md); font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .18s var(--ease); font-family: 'DM Sans', sans-serif; }
 .modal-btn-confirm { background: var(--red); color: #fff; }
 .modal-btn-confirm:hover { background: #a02530; transform: translateY(-1px); }
 .modal-btn-cancel { background: var(--bg); color: var(--ink-2); border: 1px solid var(--rule); }

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
-import LogoutModal from '../../components/LogoutModal';
+import AdminLayout from '../../components/AdminLayout';
 import { AttendanceRecord } from './AdminAttendanceDetail';
 
 const ATTENDANCE_DATA: AttendanceRecord[] = [
@@ -70,32 +70,8 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
 };
 
 const AdminAttendance: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const history = useHistory();
 
-  const handleConfirm = () => {
-    setIsLoggingOut(true);
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userData');
-    const loginPath = '/login';
-    window.history.pushState({ path: loginPath }, '', loginPath);
-    try {
-      if (window.self !== window.top) {
-        const parentWindow = window.parent;
-        if (parentWindow && parentWindow.history) {
-          parentWindow.history.pushState({ path: loginPath }, '', loginPath);
-        }
-      }
-    } catch (e) { /* ignore */ }
-    history.push('/login');
-  };
-
-  const handleCancel = () => setShowModal(false);
-  const handleLogoutComplete = () => setIsLoggingOut(false);
-
-  // Export to CSV function
   const handleExport = () => {
     const headers = ['ID', 'Name', 'Date', 'Status', 'Time In', 'Time Out', 'Hours Rendered', 'Department', 'Supervisor', 'Remarks'];
     const csvContent = [
@@ -176,13 +152,20 @@ const AdminAttendance: React.FC = () => {
 
 html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
 
-.shell { display: flex; min-height: 100vh; }
+.shell { display: flex; height: 100vh; overflow: hidden; }
 
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0; background: var(--brand-dark);
   display: flex; flex-direction: column; position: sticky; top: 0;
   height: 100vh; overflow-y: auto; z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 99px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
+
 .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .sidebar-logo-mark { display: flex; align-items: center; gap: 10px; }
 .sidebar-logo-icon {
@@ -208,12 +191,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .sidebar-nav a {
   display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-md);
   color: rgba(255,255,255,.6); text-decoration: none; font-size: .875rem; font-weight: 500;
-  transition: all .18s var(--ease);
+  transition: all .18s var(--ease); cursor: pointer;
 }
 .sidebar-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
 .sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
 .sidebar-nav a.active .nav-icon { opacity: 1; }
-.nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; }
+.nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
 .sidebar-footer a {
   display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-md);
@@ -222,12 +205,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 }
 .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
 
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
 .topbar {
   height: 60px; background: var(--surface); border-bottom: 1px solid var(--rule);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; position: sticky; top: 0; z-index: 5; box-shadow: var(--sh-sm);
+  padding: 0 32px; flex-shrink: 0; z-index: 5; box-shadow: var(--sh-sm);
 }
 .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
 .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
@@ -241,7 +224,24 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
-.page-content { padding: 28px 32px 48px; flex: 1; }
+.page-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.22) transparent;
+}
+.page-scroll-area::-webkit-scrollbar { width: 6px; }
+.page-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.page-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(95,0,118,.22);
+  border-radius: 99px;
+}
+.page-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.45); }
+
+.page-content { padding: 28px 32px 48px; }
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-header-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; }
 .page-header-sub { margin-top: 5px; font-size: .875rem; color: var(--ink-3); font-weight: 400; }
@@ -353,68 +353,38 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .trainee-name { font-size: .9375rem; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .trainee-id { font-size: .72rem; color: var(--ink-3); margin-top: 1px; font-weight: 500; }
 
-/* ── STATUS BADGES — icon-bubble pill (matches AdminTrainees) ── */
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 12px 5px 6px;
-  border-radius: var(--r-full);
-  font-size: .775rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-  white-space: nowrap;
-  width: fit-content;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px 5px 6px; border-radius: var(--r-full);
+  font-size: .775rem; font-weight: 700; letter-spacing: .02em;
+  white-space: nowrap; width: fit-content;
 }
 .status-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.status-icon svg {
-  width: 10px;
-  height: 10px;
-}
+.status-icon svg { width: 10px; height: 10px; }
 
-/* Present — rich green */
 .status-present {
   background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
-  color: #065f46;
-  border: 1.5px solid #6ee7b7;
+  color: #065f46; border: 1.5px solid #6ee7b7;
   box-shadow: 0 2px 6px rgba(6,95,70,.12), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-present .status-icon {
-  background: linear-gradient(135deg, #059669, #10b981);
-  box-shadow: 0 1px 4px rgba(5,150,105,.35);
-}
+.status-present .status-icon { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 1px 4px rgba(5,150,105,.35); }
 
-/* Late — warm amber */
 .status-late {
   background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  color: #78350f;
-  border: 1.5px solid #fcd34d;
+  color: #78350f; border: 1.5px solid #fcd34d;
   box-shadow: 0 2px 6px rgba(120,53,15,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-late .status-icon {
-  background: linear-gradient(135deg, #d97706, #f59e0b);
-  box-shadow: 0 1px 4px rgba(217,119,6,.35);
-}
+.status-late .status-icon { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 1px 4px rgba(217,119,6,.35); }
 
-/* Absent — vivid red */
 .status-absent {
   background: linear-gradient(135deg, #fee2e2 0%, #fff5f5 100%);
-  color: #991b1b;
-  border: 1.5px solid #fca5a5;
+  color: #991b1b; border: 1.5px solid #fca5a5;
   box-shadow: 0 2px 6px rgba(153,27,27,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-absent .status-icon {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  box-shadow: 0 1px 4px rgba(220,38,38,.35);
-}
+.status-absent .status-icon { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 1px 4px rgba(220,38,38,.35); }
 
 .time-range {
   display: flex; align-items: center; gap: 6px;
@@ -438,6 +408,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   .sidebar-profile { padding: 12px; justify-content: center; }
   .sidebar-nav a, .sidebar-footer a { padding: 10px; justify-content: center; gap: 0; }
   .page-content { padding: 20px 16px 40px; }
+  .topbar { padding: 0 16px; }
   .list-col-header { display: none; }
   .attendance-row { grid-template-columns: 1fr; gap: 10px; }
   .row-actions { justify-content: flex-start; }
@@ -450,259 +421,172 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 }`;
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
-      <div className="shell">
+    <AdminLayout activeMenu="attendance">
+      <style>{css}</style>
 
-        {/* ─── SIDEBAR ─────────────────────────── */}
-        <aside className="sidebar">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-mark">
-              <div className="sidebar-logo-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <div>
-                <div className="sidebar-logo-text">ISPSC OJT</div>
-                <div className="sidebar-logo-sub">Admin Panel</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="sidebar-profile">
-            <div className="sidebar-avatar">AU</div>
-            <div className="sidebar-profile-info">
-              <div className="sidebar-profile-name">Admin User</div>
-              <div className="sidebar-profile-role">Administrator</div>
-            </div>
-          </div>
-
-          <nav className="sidebar-nav">
-            <div className="nav-section-label">Main</div>
-            <ul>
-              <li><a onClick={() => history.push('/admin-dashboard')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                <span className="nav-label">Dashboard</span>
-              </a></li>
-              <li><a onClick={() => history.push('/admin-trainees')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span className="nav-label">Trainees</span>
-              </a></li>
-              <li><a onClick={() => history.push('/admin-supervisors')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                <span className="nav-label">Supervisors</span>
-              </a></li>
-              <li><a onClick={() => history.push('/admin-assignment')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/>
-                  <path d="M10 7H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3"/>
-                  <path d="M10 3h4v4h-4z"/>
-                  <line x1="19" y1="3" x2="19" y2="9"/><line x1="22" y1="6" x2="16" y2="6"/>
-                </svg>
-                <span className="nav-label">Assignment</span>
-              </a></li>
-              <li><a onClick={() => history.push('/admin-attendance')} className="active">
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span className="nav-label">Attendance</span>
-              </a></li>
-            </ul>
-            <div className="nav-section-label" style={{marginTop: '16px'}}>Reports</div>
-            <ul>
-              <li><a onClick={() => history.push('/admin-reports')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                <span className="nav-label">Reports</span>
-              </a></li>
-              <li><a onClick={() => history.push('/admin-progress')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span className="nav-label">Progress</span>
-              </a></li>
-            </ul>
-          </nav>
-
-          <div className="sidebar-footer">
-            <a href="#logout" onClick={(e) => { e.preventDefault(); setShowModal(true); }}>
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span>Logout</span>
-            </a>
-          </div>
-        </aside>
-
-        {/* ─── MAIN CONTENT ─────────────────────── */}
-        <div className="main">
-
-          <div className="topbar">
-            <div className="topbar-breadcrumb">
-              <span>Admin</span>
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-              <span className="crumb-active">Attendance</span>
-            </div>
-            <div className="topbar-right">
-              <button className="topbar-btn" title="Notifications">
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              </button>
-              <button className="topbar-btn" title="Print" onClick={() => window.print()}>
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <div className="page-content">
-
-            <div className="page-header">
-              <div>
-                <div className="page-header-title">Daily Attendance</div>
-                <div className="page-header-sub">Track and manage daily trainee attendance records — Feb 17, 2026</div>
-              </div>
-              <div className="header-actions">
-                <button className="btn-primary">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Mark Attendance
-                </button>
-              </div>
-            </div>
-
-            {/* stats */}
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon-wrap ic-total">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <div>
-                  <div className="stat-label">Total Trainees</div>
-                  <div className="stat-val">{ATTENDANCE_DATA.length}</div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon-wrap ic-present">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </div>
-                <div>
-                  <div className="stat-label">Present</div>
-                  <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'present').length}</div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon-wrap ic-late">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div>
-                  <div className="stat-label">Late</div>
-                  <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'late').length}</div>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon-wrap ic-absent">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                </div>
-                <div>
-                  <div className="stat-label">Absent</div>
-                  <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'absent').length}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* filters */}
-            <div className="filters-bar">
-              <div className="search-wrap">
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input className="search-input" type="text" placeholder="Search by trainee name or ID…" />
-              </div>
-              <div className="filter-sep"></div>
-              <label className="filter-label" htmlFor="sf">Status</label>
-              <select className="filter-select" id="sf">
-                <option value="all">All Status</option>
-                <option value="present">Present</option>
-                <option value="late">Late</option>
-                <option value="absent">Absent</option>
-              </select>
-              <div className="filter-sep"></div>
-              <label className="filter-label" htmlFor="df">Date</label>
-              <input className="date-input" type="date" id="df" defaultValue="2026-02-17" />
-            </div>
-
-            {/* attendance section */}
-            <div className="attendance-section">
-              <div className="section-head">
-                <div className="section-head-title">
-                  Attendance Records
-                  <span className="count-badge">{ATTENDANCE_DATA.length} trainees</span>
-                </div>
-                <button className="btn-ghost-sm" onClick={handleExport}>
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Export CSV
-                </button>
-              </div>
-
-              <div className="list-col-header">
-                <div className="col-label">Trainee</div>
-                <div className="col-label">Status</div>
-                <div className="col-label">Time In / Time Out</div>
-                <div className="col-label">Actions</div>
-              </div>
-
-              <div className="attendance-list">
-                {ATTENDANCE_DATA.map((record) => (
-                  <div className="attendance-row" key={record.id}>
-                    <div className="trainee-identity">
-                      <div className="trainee-avatar" style={{ background: record.avatarGradient }}>
-                        {record.initials}
-                      </div>
-                      <div className="trainee-info">
-                        <div className="trainee-name">{record.name}</div>
-                        <div className="trainee-id">{record.id}</div>
-                      </div>
-                    </div>
-
-                    {/* ── polished status badge ── */}
-                    <div>
-                      <span className={`status-badge status-${record.status}`}>
-                        <span className="status-icon">
-                          {STATUS_ICON[record.status]}
-                        </span>
-                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                      </span>
-                    </div>
-
-                    <div className="time-range">
-                      {record.status !== 'absent' ? (
-                        <>
-                          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                          {record.timeIn} <span className="time-dash">→</span> {record.timeOut}
-                        </>
-                      ) : (
-                        <span style={{ color: 'var(--ink-3)', fontStyle: 'italic', fontSize: '.8rem' }}>— No record —</span>
-                      )}
-                    </div>
-
-                    <div className="row-actions">
-                      <button className="action-btn action-view" title="View Details" onClick={() => handleViewRecord(record)}>
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                          <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
+      {/* Topbar — always visible, never scrolls */}
+      <div className="topbar">
+        <div className="topbar-breadcrumb">
+          <span>Admin</span>
+          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <span className="crumb-active">Attendance</span>
+        </div>
+        <div className="topbar-right">
+          <button className="topbar-btn" title="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button className="topbar-btn" title="Print" onClick={() => window.print()}>
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button>
         </div>
       </div>
 
-      <LogoutModal
-        isOpen={showModal}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-        isLoading={isLoggingOut}
-        onComplete={handleLogoutComplete}
-      />
-    </>
+      {/* Scrollable content — only scrolls when content overflows */}
+      <div className="page-scroll-area">
+        <div className="page-content">
+
+          <div className="page-header">
+            <div>
+              <div className="page-header-title">Daily Attendance</div>
+              <div className="page-header-sub">Track and manage daily trainee attendance records — Feb 17, 2026</div>
+            </div>
+            <div className="header-actions">
+              <button className="btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Mark Attendance
+              </button>
+            </div>
+          </div>
+
+          {/* stats */}
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon-wrap ic-total">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div>
+                <div className="stat-label">Total Trainees</div>
+                <div className="stat-val">{ATTENDANCE_DATA.length}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon-wrap ic-present">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div>
+                <div className="stat-label">Present</div>
+                <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'present').length}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon-wrap ic-late">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div className="stat-label">Late</div>
+                <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'late').length}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon-wrap ic-absent">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div>
+                <div className="stat-label">Absent</div>
+                <div className="stat-val">{ATTENDANCE_DATA.filter(r => r.status === 'absent').length}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* filters */}
+          <div className="filters-bar">
+            <div className="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input className="search-input" type="text" placeholder="Search by trainee name or ID…" />
+            </div>
+            <div className="filter-sep"></div>
+            <label className="filter-label" htmlFor="sf">Status</label>
+            <select className="filter-select" id="sf">
+              <option value="all">All Status</option>
+              <option value="present">Present</option>
+              <option value="late">Late</option>
+              <option value="absent">Absent</option>
+            </select>
+            <div className="filter-sep"></div>
+            <label className="filter-label" htmlFor="df">Date</label>
+            <input className="date-input" type="date" id="df" defaultValue="2026-02-17" />
+          </div>
+
+          {/* attendance section */}
+          <div className="attendance-section">
+            <div className="section-head">
+              <div className="section-head-title">
+                Attendance Records
+                <span className="count-badge">{ATTENDANCE_DATA.length} trainees</span>
+              </div>
+              <button className="btn-ghost-sm" onClick={handleExport}>
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export CSV
+              </button>
+            </div>
+
+            <div className="list-col-header">
+              <div className="col-label">Trainee</div>
+              <div className="col-label">Status</div>
+              <div className="col-label">Time In / Time Out</div>
+              <div className="col-label">Actions</div>
+            </div>
+
+            <div className="attendance-list">
+              {ATTENDANCE_DATA.map((record) => (
+                <div className="attendance-row" key={record.id}>
+                  <div className="trainee-identity">
+                    <div className="trainee-avatar" style={{ background: record.avatarGradient }}>
+                      {record.initials}
+                    </div>
+                    <div className="trainee-info">
+                      <div className="trainee-name">{record.name}</div>
+                      <div className="trainee-id">{record.id}</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className={`status-badge status-${record.status}`}>
+                      <span className="status-icon">
+                        {STATUS_ICON[record.status]}
+                      </span>
+                      {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                    </span>
+                  </div>
+
+                  <div className="time-range">
+                    {record.status !== 'absent' ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {record.timeIn} <span className="time-dash">→</span> {record.timeOut}
+                      </>
+                    ) : (
+                      <span style={{ color: 'var(--ink-3)', fontStyle: 'italic', fontSize: '.8rem' }}>— No record —</span>
+                    )}
+                  </div>
+
+                  <div className="row-actions">
+                    <button className="action-btn action-view" title="View Details" onClick={() => handleViewRecord(record)}>
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </AdminLayout>
   );
 };
 

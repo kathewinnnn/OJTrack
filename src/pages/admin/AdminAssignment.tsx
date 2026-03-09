@@ -297,6 +297,25 @@ const AdminAssignment: React.FC = () => {
           .stats-row { grid-template-columns: 1fr; }
           .trainee-grid { grid-template-columns: 1fr; }
         }
+
+/* ── Scrollable content area ──────────────────────────────── */
+/* Only appears when content overflows the available height    */
+.page-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.22) transparent;
+}
+.page-scroll-area::-webkit-scrollbar { width: 6px; }
+.page-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.page-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(95,0,118,.22);
+  border-radius: 99px;
+}
+.page-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.45); }
       `}</style>
 
       {/* ── Sticky topbar ── */}
@@ -313,7 +332,8 @@ const AdminAssignment: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Page content — grows naturally, parent container scrolls ── */}
+      {/* ── Scrollable area — only scrolls when content overflows ── */}
+      <div className="page-scroll-area">
       <div className="asgn-page">
 
         <div className="pg-header">
@@ -536,6 +556,7 @@ const AdminAssignment: React.FC = () => {
         )}
 
       </div>
+      </div>{/* end page-scroll-area */}
 
       {/* Toast */}
       {toast && (

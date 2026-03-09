@@ -95,19 +95,41 @@ const AdminAttendanceDetail: React.FC = () => {
   --sidebar-w: 252px;
 }
 
-html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+}
 
 /* ── SHELL ─────────────── */
-.shell { display: flex; min-height: 100vh; }
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
 
 /* ── SIDEBAR ────────────── */
 .sidebar {
-  width: var(--sidebar-w); flex-shrink: 0;
+  width: var(--sidebar-w);
+  flex-shrink: 0;
   background: var(--brand-dark);
-  display: flex; flex-direction: column;
-  position: sticky; top: 0; height: 100vh;
-  overflow-y: auto; z-index: 10;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 99px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
+
 .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .sidebar-logo-mark { display: flex; align-items: center; gap: 10px; }
 .sidebar-logo-icon {
@@ -142,15 +164,31 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .sidebar-nav a.active { background: rgba(255,255,255,.13); color: #fff; font-weight: 600; }
 .nav-icon { width: 18px; height: 18px; opacity: .6; flex-shrink: 0; }
 .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
-.sidebar-footer a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-md); color: rgba(255,255,255,.5); text-decoration: none; font-size: .875rem; font-weight: 500; transition: all .18s var(--ease); }
+.sidebar-footer a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--r-md); color: rgba(255,255,255,.5); text-decoration: none; font-size: .875rem; font-weight: 500; transition: all .18s var(--ease); cursor: pointer; }
 .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
 
 /* ── MAIN ──────────────── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── TOPBAR: fixed, never scrolls ── */
 .topbar {
-  height: 60px; background: var(--surface); border-bottom: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; position: sticky; top: 0; z-index: 5; box-shadow: var(--sh-sm);
+  height: 60px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  flex-shrink: 0;
+  z-index: 5;
+  box-shadow: var(--sh-sm);
 }
 .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
 .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
@@ -165,8 +203,26 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
+/* ── SCROLLABLE AREA ──────────────────────────────── */
+.page-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.22) transparent;
+}
+.page-scroll-area::-webkit-scrollbar { width: 6px; }
+.page-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.page-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(95,0,118,.22);
+  border-radius: 99px;
+}
+.page-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.45); }
+
 /* ── PAGE CONTENT ──────── */
-.page-content { padding: 28px 32px 48px; flex: 1; }
+.page-content { padding: 28px 32px 48px; }
 
 /* back button */
 .btn-back {
@@ -349,44 +405,25 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   .sidebar-profile { padding: 12px; justify-content: center; }
   .sidebar-nav a, .sidebar-footer a { padding: 10px; justify-content: center; gap: 0; }
   .page-content { padding: 20px 16px 40px; }
+  .topbar { padding: 0 16px; }
 }
 @media (max-width: 480px) {
   .time-block-value { font-size: 1.4rem; }
+  .detail-wrapper { grid-template-columns: 1fr; }
 }
 
 /* ── PRINT STYLES ─────── */
 @media print {
-  .sidebar, .topbar, .btn-back, .detail-actions {
-    display: none !important;
-  }
-  .shell {
-    display: block;
-    min-height: auto;
-  }
-  .main {
-    padding: 0;
-    margin: 0;
-  }
-  .page-content {
-    padding: 0;
-    margin: 0;
-  }
-  .detail-wrapper {
-    display: block;
-  }
-  .profile-card {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    page-break-inside: avoid;
-  }
-  .detail-card {
-    border: 1px solid #ccc;
-    page-break-inside: avoid;
-  }
-  body {
-    background: white;
-    color: black;
-  }
+  html, body { overflow: auto; height: auto; }
+  .shell { display: block; height: auto; overflow: visible; }
+  .sidebar, .topbar, .btn-back, .detail-actions { display: none !important; }
+  .main { height: auto; overflow: visible; }
+  .page-scroll-area { overflow: visible; height: auto; }
+  .page-content { padding: 0; margin: 0; }
+  .detail-wrapper { display: block; }
+  .profile-card { margin-bottom: 20px; border: 1px solid #ccc; page-break-inside: avoid; }
+  .detail-card { border: 1px solid #ccc; page-break-inside: avoid; }
+  body { background: white; color: black; }
 }
   `;
 
@@ -447,6 +484,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                 </a>
               </li>
               <li>
+                <a onClick={() => history.push('/admin-assignment')}>
+                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span className="nav-label">Assignment</span>
+                </a>
+              </li>
+              <li>
                 <a onClick={() => history.push('/admin-attendance')} className="active">
                   <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   <span className="nav-label">Attendance</span>
@@ -463,7 +506,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                 </a>
               </li>
               <li>
-                <a href="AdminProgress.html">
+                <a onClick={() => history.push('/admin-progress')}>
                   <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                   <span className="nav-label">Progress</span>
                 </a>
@@ -472,7 +515,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
           </nav>
 
           <div className="sidebar-footer">
-            <a href="#logout">
+            <a onClick={() => history.push('/logout')}>
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               <span>Logout</span>
             </a>
@@ -481,6 +524,8 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 
         {/* ── MAIN ─────────────────────────────── */}
         <div className="main">
+
+          {/* Topbar — fixed, never scrolls */}
           <div className="topbar">
             <div className="topbar-breadcrumb">
               <span>Admin</span>
@@ -493,210 +538,206 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
               <button className="topbar-btn" title="Notifications">
                 <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               </button>
-              <button className="topbar-btn" title="Print" onClick={() => window.print()}>
-                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              </button>
             </div>
           </div>
 
-          <div className="page-content">
-            {/* back */}
-            <button className="btn-back" onClick={() => history.push('/admin-attendance')}>
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-              Back to Attendance
-            </button>
+          {/* Scrollable content area */}
+          <div className="page-scroll-area">
+            <div className="page-content">
 
-            <div className="detail-wrapper">
+              {/* back */}
+              <button className="btn-back" onClick={() => history.push('/admin-attendance')}>
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back to Attendance
+              </button>
 
-              {/* ── LEFT: profile card ── */}
-              <div className="profile-card">
-                <div className="profile-card-banner" />
-                <div className="profile-avatar-wrap">
-                  <div
-                    className="profile-avatar-lg"
-                    style={{ background: record.avatarGradient ?? 'linear-gradient(135deg,#5f0076,#7a1896)' }}
-                  >
-                    {record.initials}
-                  </div>
-                </div>
-                <div className="profile-body">
-                  <div className="profile-name">{record.name}</div>
-                  <div className="profile-trainee-id">{record.id}</div>
+              <div className="detail-wrapper">
 
-                  <div className="profile-status-wrap">
-                    <span
-                      className="profile-status-badge"
-                      style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.ring }}
+                {/* ── LEFT: profile card ── */}
+                <div className="profile-card">
+                  <div className="profile-card-banner" />
+                  <div className="profile-avatar-wrap">
+                    <div
+                      className="profile-avatar-lg"
+                      style={{ background: record.avatarGradient ?? 'linear-gradient(135deg,#5f0076,#7a1896)' }}
                     >
-                      {cfg.icon}
-                      {cfg.label}
-                    </span>
-                  </div>
-
-                  <div className="profile-divider" />
-
-                  <div className="profile-meta">
-                    <div className="meta-row">
-                      <div className="meta-icon-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      </div>
-                      <div>
-                        <div className="meta-label">Date</div>
-                        <div className="meta-val">{record.date}</div>
-                      </div>
-                    </div>
-
-                    <div className="meta-row">
-                      <div className="meta-icon-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                      </div>
-                      <div>
-                        <div className="meta-label">Department</div>
-                        <div className="meta-val">{record.department ?? 'Information Technology'}</div>
-                      </div>
-                    </div>
-
-                    <div className="meta-row">
-                      <div className="meta-icon-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                      </div>
-                      <div>
-                        <div className="meta-label">Supervisor</div>
-                        <div className="meta-val">{record.supervisor ?? 'Dr. Maria Santos'}</div>
-                      </div>
+                      {record.initials}
                     </div>
                   </div>
+                  <div className="profile-body">
+                    <div className="profile-name">{record.name}</div>
+                    <div className="profile-trainee-id">{record.id}</div>
 
-                  <div className="profile-divider" />
-
-                  <div className="detail-actions">
-                    <button className="btn-ghost" onClick={() => window.print()}>
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                      Print
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── RIGHT: details col ── */}
-              <div className="details-col">
-
-                {/* Time In / Out card */}
-                <div className="detail-card">
-                  <div className="detail-card-head">
-                    <div className="detail-card-head-icon">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
-                    <div className="detail-card-head-title">Time Record</div>
-                  </div>
-                  <div className="detail-card-body">
-                    <div className="time-grid">
-                      <div className="time-block">
-                        <div className="time-block-label">Time In</div>
-                        {record.status !== 'absent'
-                          ? <div className="time-block-value">{record.timeIn}</div>
-                          : <div className="time-block-value absent-val">No record</div>
-                        }
-                        {record.status !== 'absent' && (
-                          <div className="time-block-sub">
-                            {record.status === 'late' ? '⚠ 30 min late' : '✓ On time'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="time-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                      </div>
-                      <div className="time-block">
-                        <div className="time-block-label">Time Out</div>
-                        {record.status !== 'absent'
-                          ? <div className="time-block-value">{record.timeOut}</div>
-                          : <div className="time-block-value absent-val">No record</div>
-                        }
-                        {record.status !== 'absent' && (
-                          <div className="time-block-sub">Regular dismissal</div>
-                        )}
-                      </div>
+                    <div className="profile-status-wrap">
+                      <span
+                        className="profile-status-badge"
+                        style={{ background: cfg.bg, color: cfg.color, borderColor: cfg.ring }}
+                      >
+                        {cfg.icon}
+                        {cfg.label}
+                      </span>
                     </div>
 
-                    <div className="hours-bar-wrap">
-                      <div className="hours-bar-label">
-                        <span className="hours-bar-text">Hours Rendered</span>
-                        <span className="hours-bar-val">{hoursRendered}</span>
-                      </div>
-                      <div className="hours-bar-track">
-                        <div className="hours-bar-fill" style={{ width: `${hoursPercent}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                    <div className="profile-divider" />
 
-                {/* Activity Timeline */}
-                <div className="detail-card">
-                  <div className="detail-card-head">
-                    <div className="detail-card-head-icon">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    </div>
-                    <div className="detail-card-head-title">Activity Timeline</div>
-                  </div>
-                  <div className="detail-card-body">
-                    <div className="timeline">
-                      {record.status !== 'absent' ? (
-                        <>
-                          <div className="timeline-item">
-                            <div className="timeline-dot dot-in">
-                              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <div className="timeline-content">
-                              <div className="timeline-time">Clocked In — {record.timeIn}</div>
-                              <div className="timeline-desc">{record.status === 'late' ? 'Arrived late — 30 minutes past expected time' : 'Arrived on time'}</div>
-                            </div>
-                          </div>
-                          <div className="timeline-item">
-                            <div className="timeline-dot dot-out">
-                              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            </div>
-                            <div className="timeline-content">
-                              <div className="timeline-time">Clocked Out — {record.timeOut}</div>
-                              <div className="timeline-desc">Regular dismissal time</div>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="timeline-item">
-                          <div className="timeline-dot dot-none">
-                            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                          </div>
-                          <div className="timeline-content">
-                            <div className="timeline-time">No Record</div>
-                            <div className="timeline-desc">Trainee did not report for duty on this date</div>
-                          </div>
+                    <div className="profile-meta">
+                      <div className="meta-row">
+                        <div className="meta-icon-wrap">
+                          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                      )}
+                        <div>
+                          <div className="meta-label">Date</div>
+                          <div className="meta-val">{record.date}</div>
+                        </div>
+                      </div>
+
+                      <div className="meta-row">
+                        <div className="meta-icon-wrap">
+                          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                        </div>
+                        <div>
+                          <div className="meta-label">Department</div>
+                          <div className="meta-val">{record.department ?? 'Information Technology'}</div>
+                        </div>
+                      </div>
+
+                      <div className="meta-row">
+                        <div className="meta-icon-wrap">
+                          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                          <div className="meta-label">Supervisor</div>
+                          <div className="meta-val">{record.supervisor ?? 'Dr. Maria Santos'}</div>
+                        </div>
+                      </div>
                     </div>
+
+                    <div className="profile-divider" />
                   </div>
                 </div>
 
-                {/* Remarks */}
-                <div className="detail-card">
-                  <div className="detail-card-head">
-                    <div className="detail-card-head-icon">
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    </div>
-                    <div className="detail-card-head-title">Remarks</div>
-                  </div>
-                  <div className="detail-card-body">
-                    {record.remarks
-                      ? <div className="remarks-box">{record.remarks}</div>
-                      : <div className="remarks-box no-remarks">No remarks recorded for this attendance entry.</div>
-                    }
-                  </div>
-                </div>
+                {/* ── RIGHT: details col ── */}
+                <div className="details-col">
 
-              </div>{/* /details-col */}
-            </div>{/* /detail-wrapper */}
-          </div>{/* /page-content */}
+                  {/* Time In / Out card */}
+                  <div className="detail-card">
+                    <div className="detail-card-head">
+                      <div className="detail-card-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      </div>
+                      <div className="detail-card-head-title">Time Record</div>
+                    </div>
+                    <div className="detail-card-body">
+                      <div className="time-grid">
+                        <div className="time-block">
+                          <div className="time-block-label">Time In</div>
+                          {record.status !== 'absent'
+                            ? <div className="time-block-value">{record.timeIn}</div>
+                            : <div className="time-block-value absent-val">No record</div>
+                          }
+                          {record.status !== 'absent' && (
+                            <div className="time-block-sub">
+                              {record.status === 'late' ? '⚠ 30 min late' : '✓ On time'}
+                            </div>
+                          )}
+                        </div>
+                        <div className="time-arrow">
+                          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </div>
+                        <div className="time-block">
+                          <div className="time-block-label">Time Out</div>
+                          {record.status !== 'absent'
+                            ? <div className="time-block-value">{record.timeOut}</div>
+                            : <div className="time-block-value absent-val">No record</div>
+                          }
+                          {record.status !== 'absent' && (
+                            <div className="time-block-sub">Regular dismissal</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="hours-bar-wrap">
+                        <div className="hours-bar-label">
+                          <span className="hours-bar-text">Hours Rendered</span>
+                          <span className="hours-bar-val">{hoursRendered}</span>
+                        </div>
+                        <div className="hours-bar-track">
+                          <div className="hours-bar-fill" style={{ width: `${hoursPercent}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activity Timeline */}
+                  <div className="detail-card">
+                    <div className="detail-card-head">
+                      <div className="detail-card-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                      </div>
+                      <div className="detail-card-head-title">Activity Timeline</div>
+                    </div>
+                    <div className="detail-card-body">
+                      <div className="timeline">
+                        {record.status !== 'absent' ? (
+                          <>
+                            <div className="timeline-item">
+                              <div className="timeline-dot dot-in">
+                                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              </div>
+                              <div className="timeline-content">
+                                <div className="timeline-time">Clocked In — {record.timeIn}</div>
+                                <div className="timeline-desc">{record.status === 'late' ? 'Arrived late — 30 minutes past expected time' : 'Arrived on time'}</div>
+                              </div>
+                            </div>
+                            <div className="timeline-item">
+                              <div className="timeline-dot dot-out">
+                                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                              </div>
+                              <div className="timeline-content">
+                                <div className="timeline-time">Clocked Out — {record.timeOut}</div>
+                                <div className="timeline-desc">Regular dismissal time</div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="timeline-item">
+                            <div className="timeline-dot dot-none">
+                              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            </div>
+                            <div className="timeline-content">
+                              <div className="timeline-time">No Record</div>
+                              <div className="timeline-desc">Trainee did not report for duty on this date</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Remarks */}
+                  <div className="detail-card">
+                    <div className="detail-card-head">
+                      <div className="detail-card-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      </div>
+                      <div className="detail-card-head-title">Remarks</div>
+                    </div>
+                    <div className="detail-card-body">
+                      {record.remarks
+                        ? <div className="remarks-box">{record.remarks}</div>
+                        : <div className="remarks-box no-remarks">No remarks recorded for this attendance entry.</div>
+                      }
+                    </div>
+                  </div>
+
+                </div>{/* /details-col */}
+              </div>{/* /detail-wrapper */}
+
+            </div>{/* /page-content */}
+          </div>{/* /page-scroll-area */}
+
         </div>{/* /main */}
-      </div>
+      </div>{/* /shell */}
     </>
   );
 };

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import LogoutModal from '../../components/LogoutModal';
 
-// Progress data type
 interface ProgressRecord {
   id: string;
   name: string;
@@ -12,14 +11,12 @@ interface ProgressRecord {
   status: 'on-track' | 'at-risk' | 'behind';
 }
 
-// Sample progress data
 const progressData: ProgressRecord[] = [
   { id: 'A23-00502', name: 'Katherine Mae Guzman', initials: 'KG', office: 'ISPSC Sta. Maria – CCS', progress: 70, status: 'on-track' },
   { id: 'A23-00503', name: 'Samantha Lumpaodan', initials: 'SL', office: 'ISPSC Main – Engineering', progress: 50, status: 'on-track' },
   { id: 'A23-00504', name: 'Mark Raffy Romero', initials: 'MR', office: 'ISPSC Alfonso Lista – Business Admin', progress: 40, status: 'at-risk' },
 ];
 
-/* ── icon SVG per status ── */
 const STATUS_ICON: Record<string, React.ReactNode> = {
   'on-track': (
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -66,7 +63,6 @@ const AdminProgress: React.FC = () => {
   const handleCancel = () => setShowModal(false);
   const handleLogoutComplete = () => setIsLoggingOut(false);
 
-  // Export to CSV function
   const handleExport = () => {
     const headers = ['ID', 'Name', 'Office', 'Progress', 'Status'];
     const csvContent = [
@@ -115,25 +111,29 @@ const AdminProgress: React.FC = () => {
   --danger-bg:    #fee2e2;
   --danger-ring:  #fca5a5;
   --blue:         #1456cc;
-  --orange:       #d95b00;
-  --red:          #c0303b;
   --r-sm:  6px; --r-md:  10px; --r-lg:  16px; --r-xl:  22px; --r-full:9999px;
   --sh-sm:  0 1px 3px rgba(0,0,0,.06);
   --sh-md:  0 4px 12px rgba(0,0,0,.08);
-  --sh-lg:  0 12px 32px rgba(0,0,0,.10);
   --sidebar-w: 252px;
   --ease: cubic-bezier(.4,0,.2,1);
 }
 
-html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
-.shell { display: flex; min-height: 100vh; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); overflow: hidden; }
+.shell { display: flex; height: 100vh; overflow: hidden; }
 
 /* ─── SIDEBAR ─── */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0; background: var(--brand-dark);
-  display: flex; flex-direction: column; position: sticky; top: 0;
-  height: 100vh; overflow-y: auto; z-index: 10;
+  display: flex; flex-direction: column; height: 100vh;
+  overflow-y: auto; overflow-x: hidden; z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.25); }
+
 .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .sidebar-logo-mark { display: flex; align-items: center; gap: 10px; }
 .sidebar-logo-icon {
@@ -174,11 +174,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
 
 /* ─── MAIN ─── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
 .topbar {
   height: 60px; background: var(--surface); border-bottom: 1px solid var(--rule);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; position: sticky; top: 0; z-index: 5; box-shadow: var(--sh-sm);
+  padding: 0 32px; flex-shrink: 0; z-index: 5; box-shadow: var(--sh-sm);
 }
 .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
 .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
@@ -193,7 +194,19 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
 /* ─── PAGE ─── */
-.page-content { padding: 28px 32px 48px; flex: 1; }
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px 32px 48px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.2) transparent;
+}
+.page-content::-webkit-scrollbar { width: 6px; }
+.page-content::-webkit-scrollbar-track { background: transparent; }
+.page-content::-webkit-scrollbar-thumb { background: rgba(95,0,118,.2); border-radius: 6px; }
+.page-content::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.35); }
+
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-header-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; }
 .page-header-sub { margin-top: 5px; font-size: .875rem; color: var(--ink-3); font-weight: 400; }
@@ -302,65 +315,39 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .bar-fill.low    { background: linear-gradient(90deg, #d97706, #f59e0b); }
 .bar-fill.danger { background: linear-gradient(90deg, #c0303b, #f87171); }
 
-/* ── STATUS BADGES — icon-bubble pill (matches all other files) ── */
+/* ── STATUS BADGES ── */
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 12px 5px 6px;
-  border-radius: var(--r-full);
-  font-size: .775rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-  white-space: nowrap;
-  width: fit-content;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px 5px 6px; border-radius: var(--r-full);
+  font-size: .775rem; font-weight: 700; letter-spacing: .02em;
+  white-space: nowrap; width: fit-content;
 }
 .status-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .status-icon svg { width: 10px; height: 10px; }
 
-/* On Track — rich green */
 .status-on-track {
   background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
-  color: #065f46;
-  border: 1.5px solid #6ee7b7;
+  color: #065f46; border: 1.5px solid #6ee7b7;
   box-shadow: 0 2px 6px rgba(6,95,70,.12), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-on-track .status-icon {
-  background: linear-gradient(135deg, #059669, #10b981);
-  box-shadow: 0 1px 4px rgba(5,150,105,.35);
-}
+.status-on-track .status-icon { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 1px 4px rgba(5,150,105,.35); }
 
-/* At Risk — warm amber */
 .status-at-risk {
   background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  color: #78350f;
-  border: 1.5px solid #fcd34d;
+  color: #78350f; border: 1.5px solid #fcd34d;
   box-shadow: 0 2px 6px rgba(120,53,15,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-at-risk .status-icon {
-  background: linear-gradient(135deg, #d97706, #f59e0b);
-  box-shadow: 0 1px 4px rgba(217,119,6,.35);
-}
+.status-at-risk .status-icon { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 1px 4px rgba(217,119,6,.35); }
 
-/* Behind — vivid red */
 .status-behind {
   background: linear-gradient(135deg, #fee2e2 0%, #fff5f5 100%);
-  color: #991b1b;
-  border: 1.5px solid #fca5a5;
+  color: #991b1b; border: 1.5px solid #fca5a5;
   box-shadow: 0 2px 6px rgba(153,27,27,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-behind .status-icon {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  box-shadow: 0 1px 4px rgba(220,38,38,.35);
-}
+.status-behind .status-icon { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 1px 4px rgba(220,38,38,.35); }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -490,8 +477,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                 <div className="page-header-title">Trainee Progress</div>
                 <div className="page-header-sub">Track OJT completion progress for all active trainees</div>
               </div>
-              <div className="header-actions">
-              </div>
+              <div className="header-actions" />
             </div>
 
             {/* stats */}
@@ -567,8 +553,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
               </div>
 
               <div className="progress-list">
-
-                {/* row 1 – 70% On Track */}
                 <div className="progress-row">
                   <div className="trainee-identity">
                     <div className="trainee-avatar">KG</div>
@@ -589,7 +573,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                   </div>
                 </div>
 
-                {/* row 2 – 50% On Track */}
                 <div className="progress-row">
                   <div className="trainee-identity">
                     <div className="trainee-avatar" style={{background: 'linear-gradient(135deg,#1456cc,#60a5fa)'}}>SL</div>
@@ -610,7 +593,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                   </div>
                 </div>
 
-                {/* row 3 – 40% At Risk */}
                 <div className="progress-row">
                   <div className="trainee-identity">
                     <div className="trainee-avatar" style={{background: 'linear-gradient(135deg,#d97706,#f59e0b)'}}>MR</div>
@@ -630,10 +612,8 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                     </span>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
         </div>
       </div>

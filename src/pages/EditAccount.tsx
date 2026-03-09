@@ -1,10 +1,11 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { IonPage, IonContent, IonIcon } from '@ionic/react';
 import {
   arrowBackOutline, personOutline, mailOutline, schoolOutline,
   calendarOutline, shieldCheckmarkOutline, callOutline, locationOutline,
   checkmarkCircleOutline, saveOutline, cameraOutline, closeOutline,
-  checkmarkOutline, imageOutline, trashOutline,
+  checkmarkOutline, imageOutline, trashOutline, personCircleOutline,
+  transgenderOutline, alertCircleOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import './EditAccount.css';
@@ -15,42 +16,57 @@ interface StudentProfile {
   name: string; email: string; phone: string; address: string;
   profilePhoto: string | null;
   program: string; year: string; studentId: string;
-}
-
-interface FormField {
-  key: string; label: string; icon: string;
-  type: string; placeholder: string; editable: boolean;
-  hint?: string;
-  options?: string[]; // if present, render a <select>
+  username: string;
+  gender: string;
+  birthday: string;
 }
 
 const loadStudentProfile = (): StudentProfile => {
   try {
     const saved = localStorage.getItem(STUDENT_PROFILE_KEY);
-    if (saved) return JSON.parse(saved);
+    const loggedInUsername = localStorage.getItem('loggedInUsername');
 
-    const username = localStorage.getItem('loggedInUsername');
     const getUserData = () => {
       const cu = localStorage.getItem('currentUser');
       if (cu) return JSON.parse(cu);
-      if (username) {
+      if (loggedInUsername) {
         const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
-        return users.find(u => u.username === username) ?? null;
+        return users.find(u => u.username === loggedInUsername) ?? null;
       }
       return null;
     };
-
     const src = getUserData();
+
+    if (saved) {
+      const p = JSON.parse(saved);
+      return {
+        name:         p.name         ?? 'Student',
+        email:        p.email        ?? '',
+        phone:        p.phone        ?? '',
+        address:      p.address      ?? '',
+        profilePhoto: p.profilePhoto ?? null,
+        program:      p.program      ?? '',
+        year:         p.year         ?? '1st Year',
+        studentId:    p.studentId    ?? '',
+        username:     p.username     ?? src?.username  ?? loggedInUsername ?? '',
+        gender:       p.gender       ?? src?.gender    ?? '',
+        birthday:     p.birthday     ?? src?.birthday  ?? '',
+      };
+    }
+
     if (src) {
       const seeded: StudentProfile = {
         name:         `${src.firstName ?? ''} ${src.lastName ?? ''}`.trim() || 'Student',
-        email:        src.email      ?? '',
-        phone:        src.phone      ?? '',
-        address:      src.address    ?? '',
+        email:        src.email        ?? '',
+        phone:        src.phone        ?? '',
+        address:      src.address      ?? '',
         profilePhoto: src.profilePhoto ?? null,
-        program:      src.program    ?? '',
-        year:         src.year       ?? '1st Year',
-        studentId:    src.studentId  ?? '',
+        program:      src.program      ?? '',
+        year:         src.year         ?? '1st Year',
+        studentId:    src.studentId    ?? '',
+        username:     src.username     ?? loggedInUsername ?? '',
+        gender:       src.gender       ?? '',
+        birthday:     src.birthday     ?? '',
       };
       localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(seeded));
       return seeded;
@@ -62,51 +78,91 @@ const loadStudentProfile = (): StudentProfile => {
     phone: '', address: '', profilePhoto: null,
     program: 'Bachelor of Science in Information Technology',
     year: '3rd Year', studentId: 'A23-00502',
+    username: 'katheguzman', gender: '', birthday: '',
   };
 };
 
-const saveStudentProfile = (data: StudentProfile) => {
+/**
+ * Saves the profile and also updates the username key in both the users[]
+ * array and currentUser so the session stays consistent.
+ */
+const saveStudentProfile = (data: StudentProfile, oldUsername: string) => {
   try {
     localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(data));
 
-    const username = localStorage.getItem('loggedInUsername');
-    if (username) {
-      const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
-      const idx = users.findIndex(u => u.username === username);
-      if (idx !== -1) {
-        users[idx].email        = data.email;
-        users[idx].phone        = data.phone;
-        users[idx].address      = data.address;
-        users[idx].profilePhoto = data.profilePhoto;
-        users[idx].year         = data.year;
-        localStorage.setItem('users', JSON.stringify(users));
-      }
+    const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
+    const idx = users.findIndex(u => u.username === oldUsername);
+    if (idx !== -1) {
+      users[idx].username     = data.username;   // ← update username
+      users[idx].email        = data.email;
+      users[idx].phone        = data.phone;
+      users[idx].address      = data.address;
+      users[idx].profilePhoto = data.profilePhoto;
+      users[idx].year         = data.year;
+      users[idx].gender       = data.gender;
+      users[idx].birthday     = data.birthday;
+      localStorage.setItem('users', JSON.stringify(users));
     }
+
+    // Keep loggedInUsername in sync so future loads find the right record
+    localStorage.setItem('loggedInUsername', data.username);
 
     const cu = localStorage.getItem('currentUser');
     if (cu) {
       const parsed = JSON.parse(cu);
+      parsed.username     = data.username;
       parsed.email        = data.email;
       parsed.phone        = data.phone;
       parsed.address      = data.address;
       parsed.profilePhoto = data.profilePhoto;
       parsed.year         = data.year;
+      parsed.gender       = data.gender;
+      parsed.birthday     = data.birthday;
       localStorage.setItem('currentUser', JSON.stringify(parsed));
     }
+
+    // Notify Account.tsx (same tab) that the profile changed
+    window.dispatchEvent(new Event('profileUpdated'));
   } catch (e) { console.error('EditAccount save error:', e); }
+};
+
+// ── Username availability checker ─────────────────────────────────────────────
+type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
+
+const checkUsernameAvailability = (
+  newUsername: string,
+  currentUsername: string,
+): UsernameStatus => {
+  const trimmed = newUsername.trim().toLowerCase();
+  if (!trimmed) return 'idle';
+  if (trimmed.length < 3) return 'invalid';
+  if (!/^[a-z0-9._]+$/.test(trimmed)) return 'invalid';
+  // Same as the current user's own username — always fine
+  if (trimmed === currentUsername.trim().toLowerCase()) return 'available';
+  const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
+  const taken = users.some(u => u.username?.toLowerCase() === trimmed);
+  return taken ? 'taken' : 'available';
 };
 
 interface CropState { x: number; y: number; scale: number; }
 const CROP_SIZE = 260;
-const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+const YEAR_OPTIONS   = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
 const EditAccount: React.FC = () => {
   const history = useHistory();
-  const [isSaving, setIsSaving]   = useState(false);
-  const [saved, setSaved]         = useState(false);
-  const [form, setForm]           = useState<StudentProfile>(loadStudentProfile);
-  const [touched, setTouched]     = useState<Record<string, boolean>>({});
-  const [errors, setErrors]       = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [form, setForm]         = useState<StudentProfile>(loadStudentProfile);
+  const [touched, setTouched]   = useState<Record<string, boolean>>({});
+  const [errors, setErrors]     = useState<Record<string, string>>({});
+
+  // Track the username at load time so we know what record to update
+  const originalUsername = useRef(form.username);
+
+  // Username availability state
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle');
+  const usernameDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const [isCropping, setIsCropping]   = useState(false);
@@ -115,6 +171,18 @@ const EditAccount: React.FC = () => {
   const dragStart    = useRef<{ mx: number; my: number; cx: number; cy: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropImgRef   = useRef<HTMLImageElement>(null);
+
+  // Check username whenever it changes (debounced)
+  useEffect(() => {
+    if (usernameDebounce.current) clearTimeout(usernameDebounce.current);
+    const val = form.username?.trim() ?? '';
+    if (!val) { setUsernameStatus('idle'); return; }
+    setUsernameStatus('checking');
+    usernameDebounce.current = setTimeout(() => {
+      setUsernameStatus(checkUsernameAvailability(val, originalUsername.current));
+    }, 400);
+    return () => { if (usernameDebounce.current) clearTimeout(usernameDebounce.current); };
+  }, [form.username]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -162,21 +230,15 @@ const EditAccount: React.FC = () => {
     setRawImageSrc(null);
   }, [rawImageSrc, cropState]);
 
-  const fields: FormField[] = [
-    { key: 'name',      label: 'Full Name',        icon: personOutline,          type: 'text',  placeholder: 'Your full name',   editable: true },
-    { key: 'email',     label: 'Email Address',    icon: mailOutline,            type: 'email', placeholder: 'your@email.com',   editable: true },
-    { key: 'phone',     label: 'Phone Number',     icon: callOutline,            type: 'tel',   placeholder: '+63 9XX XXX XXXX', editable: true },
-    { key: 'address',   label: 'Home Address',     icon: locationOutline,        type: 'text',  placeholder: 'City, Province',   editable: true },
-    // ← Year Level is now editable with a dropdown
-    { key: 'year',      label: 'Year Level',       icon: calendarOutline,        type: 'select', placeholder: '1st Year',        editable: true,  options: YEAR_OPTIONS },
-    { key: 'program',   label: 'Academic Program', icon: schoolOutline,          type: 'text',  placeholder: 'Your program',     editable: false, hint: 'Contact your coordinator to change' },
-    { key: 'studentId', label: 'Student ID',       icon: shieldCheckmarkOutline, type: 'text',  placeholder: 'A00-00000',        editable: false, hint: 'Cannot be changed' },
-  ];
-
-  const validate = (key: string, value: string) => {
-    if (key === 'name'  && value.trim().length < 2) return 'Name must be at least 2 characters';
-    if (key === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address';
-    if (key === 'phone' && value && !/^[+\d\s\-()]{7,}$/.test(value)) return 'Enter a valid phone number';
+  // ── Validation ───────────────────────────────────────────────────────────────
+  const validate = (key: string, value: string): string => {
+    if (key === 'name'     && value.trim().length < 2) return 'Name must be at least 2 characters';
+    if (key === 'email'    && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address';
+    if (key === 'phone'    && value && !/^[+\d\s\-()]{7,}$/.test(value)) return 'Enter a valid phone number';
+    if (key === 'username') {
+      if (value.trim().length < 3) return 'Username must be at least 3 characters';
+      if (!/^[a-zA-Z0-9._]+$/.test(value.trim())) return 'Only letters, numbers, dots and underscores';
+    }
     return '';
   };
 
@@ -190,18 +252,23 @@ const EditAccount: React.FC = () => {
     setErrors(prev => ({ ...prev, [key]: validate(key, (form as any)[key] ?? '') }));
   };
 
-  const isFormValid = !errors.name && !errors.email && !errors.phone &&
-    form.name.trim().length >= 2 && form.email.trim().length > 0;
+  const usernameOk = usernameStatus === 'available';
+  const isFormValid =
+    !errors.name && !errors.email && !errors.phone && !errors.username &&
+    form.name.trim().length >= 2 &&
+    form.email.trim().length > 0 &&
+    form.username.trim().length >= 3 &&
+    usernameOk;
 
   const handleSave = () => {
     if (!isFormValid) return;
     setIsSaving(true);
-    saveStudentProfile(form);
+    saveStudentProfile(form, originalUsername.current);
     setTimeout(() => {
       setIsSaving(false);
       setSaved(true);
       setTimeout(() => history.push('/account'), 1800);
-    }, 1800);
+    }, 1200);
   };
 
   if (saved) {
@@ -217,6 +284,33 @@ const EditAccount: React.FC = () => {
       </IonPage>
     );
   }
+
+  // ── Username status UI helpers ────────────────────────────────────────────────
+  const usernameStatusUI: Record<UsernameStatus, { color: string; text: string; icon: any } | null> = {
+    idle:      null,
+    checking:  { color: '#888', text: 'Checking…', icon: null },
+    available: { color: '#2e7d32', text: 'Username available', icon: checkmarkCircleOutline },
+    taken:     { color: '#c62828', text: 'Username already taken', icon: alertCircleOutline },
+    invalid:   { color: '#c62828', text: 'Min 3 chars; letters, numbers, dots, underscores only', icon: alertCircleOutline },
+  };
+  const uStatus = usernameStatusUI[usernameStatus];
+
+  // ── Editable fields ───────────────────────────────────────────────────────────
+  const editableFields = [
+    { key: 'name',     label: 'Full Name',     icon: personOutline,      type: 'text',   placeholder: 'Your full name'    },
+    { key: 'username', label: 'Username',       icon: personCircleOutline,type: 'text',   placeholder: 'e.g. john_doe'     },
+    { key: 'email',    label: 'Email Address', icon: mailOutline,        type: 'email',  placeholder: 'your@email.com'    },
+    { key: 'phone',    label: 'Phone Number',  icon: callOutline,        type: 'tel',    placeholder: '+63 9XX XXX XXXX'  },
+    { key: 'address',  label: 'Home Address',  icon: locationOutline,    type: 'text',   placeholder: 'City, Province'    },
+    { key: 'gender',   label: 'Gender',        icon: transgenderOutline, type: 'select', placeholder: 'Select gender',    options: GENDER_OPTIONS },
+    { key: 'birthday', label: 'Birthday',      icon: calendarOutline,    type: 'date',   placeholder: 'YYYY-MM-DD'        },
+    { key: 'year',     label: 'Year Level',    icon: calendarOutline,    type: 'select', placeholder: '1st Year',         options: YEAR_OPTIONS   },
+  ];
+
+  const lockedFields = [
+    { key: 'program',   label: 'Academic Program', icon: schoolOutline,          hint: 'Contact your coordinator to change' },
+    { key: 'studentId', label: 'Student ID',        icon: shieldCheckmarkOutline, hint: 'Cannot be changed' },
+  ];
 
   return (
     <IonPage>
@@ -286,7 +380,7 @@ const EditAccount: React.FC = () => {
           {/* Editable fields */}
           <div className="ea-section">
             <div className="ea-section-label">Personal Information</div>
-            {fields.filter(f => f.editable).map(field => (
+            {editableFields.map(field => (
               <div key={field.key} className={[
                 'ea-field',
                 touched[field.key] && errors[field.key] ? 'ea-field--error' : '',
@@ -297,32 +391,60 @@ const EditAccount: React.FC = () => {
                 </label>
                 <div className="ea-input-wrap">
                   {field.options ? (
-                    /* ── Year Level dropdown ── */
                     <select
                       className="ea-input ea-select"
                       value={(form as any)[field.key] ?? ''}
                       onChange={e => handleChange(field.key, e.target.value)}
                       onBlur={() => handleBlur(field.key)}
                     >
+                      {field.key === 'gender' && <option value="">Select gender</option>}
                       {field.options.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </select>
                   ) : (
                     <input
-                      type={field.type} className="ea-input"
+                      type={field.type}
+                      className="ea-input"
                       placeholder={field.placeholder}
                       value={(form as any)[field.key] ?? ''}
                       onChange={e => handleChange(field.key, e.target.value)}
                       onBlur={() => handleBlur(field.key)}
+                      max={field.type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
                     />
                   )}
-                  {/* Valid tick — not shown for selects since they always have a value */}
-                  {!field.options && touched[field.key] && !errors[field.key] && (form as any)[field.key] && (
+                  {/* Valid tick for non-select/date fields (but NOT username — it has its own indicator) */}
+                  {field.type !== 'select' && field.type !== 'date' && field.key !== 'username' &&
+                   touched[field.key] && !errors[field.key] && (form as any)[field.key] && (
                     <IonIcon icon={checkmarkCircleOutline} className="ea-valid-icon" />
                   )}
                 </div>
-                {touched[field.key] && errors[field.key] && (
+
+                {/* Username availability indicator */}
+                {field.key === 'username' && uStatus && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    marginTop: 5, fontSize: 12, color: uStatus.color, fontWeight: 500,
+                  }}>
+                    {uStatus.icon && (
+                      <IonIcon icon={uStatus.icon} style={{ fontSize: 14, color: uStatus.color }} />
+                    )}
+                    {usernameStatus === 'checking' && (
+                      <span style={{
+                        display: 'inline-block', width: 12, height: 12,
+                        border: '2px solid #ccc', borderTopColor: '#888',
+                        borderRadius: '50%', animation: 'spin 0.6s linear infinite',
+                        marginRight: 2,
+                      }} />
+                    )}
+                    {uStatus.text}
+                  </div>
+                )}
+
+                {touched[field.key] && errors[field.key] && field.key !== 'username' && (
+                  <p className="ea-error-msg">{errors[field.key]}</p>
+                )}
+                {touched[field.key] && errors[field.key] && field.key === 'username' && (
                   <p className="ea-error-msg">{errors[field.key]}</p>
                 )}
               </div>
@@ -333,13 +455,13 @@ const EditAccount: React.FC = () => {
           <div className="ea-section">
             <div className="ea-section-label">Academic Details</div>
             <p className="ea-section-hint">These fields are managed by your institution</p>
-            {fields.filter(f => !f.editable).map(field => (
+            {lockedFields.map(field => (
               <div key={field.key} className="ea-field ea-field--locked">
                 <label className="ea-field-label">
                   <IonIcon icon={field.icon} />{field.label}
                 </label>
                 <div className="ea-input-wrap">
-                  <input type={field.type} className="ea-input ea-input--locked"
+                  <input type="text" className="ea-input ea-input--locked"
                     value={(form as any)[field.key] ?? ''} readOnly disabled />
                   <span className="ea-lock-badge">Locked</span>
                 </div>
@@ -375,6 +497,7 @@ const EditAccount: React.FC = () => {
               .ea-ring{position:absolute;inset:0;border-radius:50%;border:2.5px solid rgba(95,0,118,.8);pointer-events:none;z-index:3}
               .ea-sl{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}
               .ea-sl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#9c27b0;box-shadow:0 0 0 3px rgba(95,0,118,.3);cursor:pointer}
+              @keyframes spin { to { transform: rotate(360deg); } }
             `}</style>
             <div style={{
               background: '#1a0a26', borderRadius: 22, width: '100%', maxWidth: 380,

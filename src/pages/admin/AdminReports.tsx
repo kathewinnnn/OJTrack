@@ -13,8 +13,7 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '7:30 AM',
     timeOut: '5:00 PM',
     status: 'pending',
-    description: 'Completed internship tasks for the day including documentation and testing.',
-    attachment: 'report.pdf',
+    description: 'Completed internship tasks for the day including documentation and testing.'
   },
   {
     id: 'A23-00503',
@@ -26,8 +25,7 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '8:30 AM',
     timeOut: '5:00 PM',
     status: 'approved',
-    description: 'Assisted with UI design updates and attended team stand-up.',
-    attachment: 'daily-report-02-15.pdf',
+    description: 'Assisted with UI design updates and attended team stand-up.'
   },
   {
     id: 'A23-00504',
@@ -39,8 +37,7 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '7:30 AM',
     timeOut: '5:00 PM',
     status: 'declined',
-    description: 'Report content was incomplete. Missing task summary and supervisor signature.',
-    attachment: 'report-feb14.pdf',
+    description: 'Report content was incomplete. Missing task summary and supervisor signature.'
   },
 ];
 
@@ -65,7 +62,8 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
   ),
 };
 
-const GRID_COLS = 'minmax(200px,2fr) 160px 148px 148px 176px';
+// Fixed: 4 columns to match the 4 header labels (Student, Date/Time, Status, Actions)
+const GRID_COLS = 'minmax(220px,2.5fr) 160px 140px 180px';
 
 const AdminReports: React.FC = () => {
   const [showModal,    setShowModal]    = useState(false);
@@ -89,7 +87,6 @@ const AdminReports: React.FC = () => {
   const handleCancel         = () => setShowModal(false);
   const handleLogoutComplete = () => setIsLoggingOut(false);
 
-  // Export to CSV function
   const handleExport = () => {
     const headers = ['ID', 'Name', 'Course', 'Date', 'Time In', 'Time Out', 'Status', 'Description'];
     const csvContent = [
@@ -160,15 +157,22 @@ const AdminReports: React.FC = () => {
   --ease: cubic-bezier(.4,0,.2,1);
 }
 
-html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
-.shell { display: flex; min-height: 100vh; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); overflow: hidden; }
+.shell { display: flex; height: 100vh; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0; background: var(--brand-dark);
-  display: flex; flex-direction: column; position: sticky; top: 0;
-  height: 100vh; overflow-y: auto; z-index: 10;
+  display: flex; flex-direction: column; height: 100vh;
+  overflow-y: auto; overflow-x: hidden; z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.15) transparent;
 }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.25); }
+
 .sidebar-logo { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .sidebar-logo-mark { display: flex; align-items: center; gap: 10px; }
 .sidebar-logo-icon {
@@ -211,11 +215,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .sidebar-footer a:hover { background: rgba(255,0,0,.12); color: #ff7070; }
 
 /* ── MAIN ── */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
 .topbar {
   height: 60px; background: var(--surface); border-bottom: 1px solid var(--rule);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; position: sticky; top: 0; z-index: 5; box-shadow: var(--sh-sm);
+  padding: 0 32px; flex-shrink: 0; z-index: 5; box-shadow: var(--sh-sm);
 }
 .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
 .topbar-breadcrumb .crumb-active { color: var(--ink); font-weight: 600; }
@@ -231,7 +236,19 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
 /* ── PAGE ── */
-.page-content { padding: 28px 32px 48px; flex: 1; }
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px 32px 48px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95,0,118,.2) transparent;
+}
+.page-content::-webkit-scrollbar { width: 6px; }
+.page-content::-webkit-scrollbar-track { background: transparent; }
+.page-content::-webkit-scrollbar-thumb { background: rgba(95,0,118,.2); border-radius: 6px; }
+.page-content::-webkit-scrollbar-thumb:hover { background: rgba(95,0,118,.35); }
+
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-header-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; }
 .page-header-sub { margin-top: 5px; font-size: .875rem; color: var(--ink-3); }
@@ -331,17 +348,26 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .btn-ghost-sm:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .btn-ghost-sm svg { width: 14px; height: 14px; stroke: currentColor; }
 
-.list-col-header {
-  display: grid; grid-template-columns: ${GRID_COLS};
-  gap: 16px; padding: 10px 24px;
-  background: var(--bg); border-bottom: 1px solid var(--rule); align-items: center;
+/* ── TABLE GRID: 4 columns matching 4 headers ── */
+.list-col-header,
+.report-row {
+  display: grid;
+  grid-template-columns: ${GRID_COLS};
+  gap: 16px;
+  align-items: center;
 }
+
+.list-col-header {
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
+
 .col-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); white-space: nowrap; }
 
 .reports-list { display: flex; flex-direction: column; }
 .report-row {
-  display: grid; grid-template-columns: ${GRID_COLS};
-  gap: 16px; padding: 16px 24px; align-items: center;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--rule);
   transition: background .15s var(--ease);
   animation: rowIn .3s var(--ease) both;
@@ -353,14 +379,14 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .report-row:hover        { background: var(--brand-soft); }
 @keyframes rowIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-.trainee-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.trainee-identity { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
 .trainee-avatar {
   width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; color: #fff;
   box-shadow: 0 2px 8px rgba(95,0,118,.25);
 }
-.trainee-info   { min-width: 0; }
+.trainee-info   { min-width: 0; flex: 1; }
 .trainee-name   { font-size: .875rem; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .trainee-id     { font-size: .72rem; color: var(--ink-3); margin-top: 1px; font-weight: 500; }
 .trainee-course { font-size: .72rem; color: var(--ink-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -375,65 +401,39 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .cell-time-line { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--ink-3); font-weight: 500; white-space: nowrap; }
 .cell-time-line svg { width: 12px; height: 12px; stroke: var(--ink-3); flex-shrink: 0; }
 
-/* ── STATUS BADGES — icon-bubble pill (matches AdminTrainees / AdminAttendance) ── */
+/* ── STATUS BADGES ── */
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 12px 5px 6px;
-  border-radius: var(--r-full);
-  font-size: .775rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-  white-space: nowrap;
-  width: fit-content;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px 5px 6px; border-radius: var(--r-full);
+  font-size: .775rem; font-weight: 700; letter-spacing: .02em;
+  white-space: nowrap; width: fit-content;
 }
 .status-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .status-icon svg { width: 10px; height: 10px; }
 
-/* Pending — warm amber */
 .status-pending {
   background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  color: #78350f;
-  border: 1.5px solid #fcd34d;
+  color: #78350f; border: 1.5px solid #fcd34d;
   box-shadow: 0 2px 6px rgba(120,53,15,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-pending .status-icon {
-  background: linear-gradient(135deg, #d97706, #f59e0b);
-  box-shadow: 0 1px 4px rgba(217,119,6,.35);
-}
+.status-pending .status-icon { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 1px 4px rgba(217,119,6,.35); }
 
-/* Approved — rich green */
 .status-approved {
   background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
-  color: #065f46;
-  border: 1.5px solid #6ee7b7;
+  color: #065f46; border: 1.5px solid #6ee7b7;
   box-shadow: 0 2px 6px rgba(6,95,70,.12), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-approved .status-icon {
-  background: linear-gradient(135deg, #059669, #10b981);
-  box-shadow: 0 1px 4px rgba(5,150,105,.35);
-}
+.status-approved .status-icon { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 1px 4px rgba(5,150,105,.35); }
 
-/* Declined — vivid red */
 .status-declined {
   background: linear-gradient(135deg, #fee2e2 0%, #fff5f5 100%);
-  color: #991b1b;
-  border: 1.5px solid #fca5a5;
+  color: #991b1b; border: 1.5px solid #fca5a5;
   box-shadow: 0 2px 6px rgba(153,27,27,.1), inset 0 1px 0 rgba(255,255,255,.6);
 }
-.status-declined .status-icon {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  box-shadow: 0 1px 4px rgba(220,38,38,.35);
-}
+.status-declined .status-icon { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 1px 4px rgba(220,38,38,.35); }
 
 .attach-link {
   display: inline-flex; align-items: center; gap: 6px;
@@ -472,10 +472,10 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .resolved-declined { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-ring); }
 
 @media (max-width: 1100px) {
-  .list-col-header, .report-row { grid-template-columns: minmax(180px,2fr) 148px 136px 132px 160px; gap: 12px; padding-left: 18px; padding-right: 18px; }
+  .list-col-header, .report-row { grid-template-columns: minmax(180px,2fr) 148px 130px 160px; gap: 12px; padding-left: 18px; padding-right: 18px; }
 }
 @media (max-width: 920px) {
-  .list-col-header, .report-row { grid-template-columns: minmax(160px,2fr) 134px 124px 120px 144px; gap: 10px; padding-left: 14px; padding-right: 14px; }
+  .list-col-header, .report-row { grid-template-columns: minmax(160px,2fr) 134px 120px 144px; gap: 10px; padding-left: 14px; padding-right: 14px; }
 }
 @media (max-width: 840px) {
   :root { --sidebar-w: 60px; }
@@ -656,11 +656,11 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                 </button>
               </div>
 
+              {/* Fixed: 4 header labels matching 4 grid columns */}
               <div className="list-col-header">
                 <div className="col-label">Student</div>
                 <div className="col-label">Date / Time</div>
                 <div className="col-label">Status</div>
-                <div className="col-label">Attachment</div>
                 <div className="col-label">Actions</div>
               </div>
 
@@ -668,7 +668,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                 {reports.map((report) => (
                   <div className="report-row" key={report.id}>
 
-                    {/* col 1 — Student */}
+                    {/* Col 1: Student */}
                     <div className="trainee-identity">
                       <div className="trainee-avatar" style={{ background: report.avatarGradient ?? 'linear-gradient(135deg,#5f0076,#7a1896)' }}>
                         {report.initials}
@@ -681,7 +681,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                       </div>
                     </div>
 
-                    {/* col 2 — Date / Time */}
+                    {/* Col 2: Date / Time */}
                     <div className="cell-datetime">
                       <div className="cell-date-line">
                         <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -693,25 +693,15 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
                       </div>
                     </div>
 
-                    {/* col 3 — Status (icon-bubble pill) */}
+                    {/* Col 3: Status */}
                     <div>
                       <span className={`status-badge status-${report.status}`}>
-                        <span className="status-icon">
-                          {STATUS_ICON[report.status]}
-                        </span>
+                        <span className="status-icon">{STATUS_ICON[report.status]}</span>
                         {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                       </span>
                     </div>
 
-                    {/* col 4 — Attachment */}
-                    <div>
-                      <a href="#" className="attach-link" title={report.attachment}>
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                        {report.attachment}
-                      </a>
-                    </div>
-
-                    {/* col 5 — Actions */}
+                    {/* Col 4: Actions */}
                     <div>
                       {report.status === 'pending' ? (
                         <div className="actions-wrap">
