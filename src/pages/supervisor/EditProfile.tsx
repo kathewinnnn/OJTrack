@@ -3,35 +3,27 @@ import { IonPage, IonContent, IonIcon } from '@ionic/react';
 import {
   personCircleOutline, mailOutline, businessOutline, arrowBackOutline,
   checkmarkCircleOutline, idCardOutline, briefcaseOutline, cameraOutline,
-  closeOutline, checkmarkOutline, imageOutline, trashOutline,
+  closeOutline, checkmarkOutline, imageOutline, trashOutline, alertCircleOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
 import './supervisor.css';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STORAGE KEY  — this key is NEVER wiped by logout logic, so edits survive
-// ─────────────────────────────────────────────────────────────────────────────
 const PROFILE_KEY = 'supervisorProfile';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FIELD CONFIG
-// ─────────────────────────────────────────────────────────────────────────────
 interface FieldConfig {
   key: string; icon: string; label: string;
   type: string; section: 'personal' | 'professional';
+  errorMsg: string;
 }
 const fieldConfig: FieldConfig[] = [
-  { key: 'fullName',   icon: personCircleOutline, label: 'Full Name',     type: 'text',  section: 'personal' },
-  { key: 'email',      icon: mailOutline,          label: 'Email Address', type: 'email', section: 'personal' },
-  { key: 'employeeId', icon: idCardOutline,         label: 'Employee ID',  type: 'text',  section: 'personal' },
-  { key: 'department', icon: businessOutline,       label: 'Department',   type: 'text',  section: 'professional' },
-  { key: 'role',       icon: briefcaseOutline,      label: 'Role / Title', type: 'text',  section: 'professional' },
+  { key: 'fullName',   icon: personCircleOutline, label: 'Full Name',     type: 'text',  section: 'personal',      errorMsg: 'Full name is required.' },
+  { key: 'email',      icon: mailOutline,          label: 'Email Address', type: 'email', section: 'personal',      errorMsg: 'Email address is required.' },
+  { key: 'employeeId', icon: idCardOutline,         label: 'Employee ID',  type: 'text',  section: 'personal',      errorMsg: 'Employee ID is required.' },
+  { key: 'department', icon: businessOutline,       label: 'Department',   type: 'text',  section: 'professional',  errorMsg: 'Department is required.' },
+  { key: 'role',       icon: briefcaseOutline,      label: 'Role / Title', type: 'text',  section: 'professional',  errorMsg: 'Role / Title is required.' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES / DEFAULTS
-// ─────────────────────────────────────────────────────────────────────────────
 interface ProfileData {
   fullName: string; email: string; employeeId: string;
   department: string; role: string; profilePhoto: string | null;
@@ -45,15 +37,11 @@ const DEFAULT_PROFILE: ProfileData = {
   profilePhoto: null,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOAD  ── priority: supervisorProfile (durable) > registration seed
-// ─────────────────────────────────────────────────────────────────────────────
 const loadProfile = (): ProfileData => {
   try {
     const saved = localStorage.getItem(PROFILE_KEY);
-    if (saved) return JSON.parse(saved);           // already saved → always wins
+    if (saved) return JSON.parse(saved);
 
-    // First-time: seed from the registered users[] entry
     const username = localStorage.getItem('loggedInUsername');
     if (username) {
       const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
@@ -67,7 +55,6 @@ const loadProfile = (): ProfileData => {
           role:         DEFAULT_PROFILE.role,
           profilePhoto: found.profilePhoto ?? null,
         };
-        // Persist immediately so future loads always hit the saved branch
         localStorage.setItem(PROFILE_KEY, JSON.stringify(seeded));
         return seeded;
       }
@@ -76,15 +63,10 @@ const loadProfile = (): ProfileData => {
   return { ...DEFAULT_PROFILE };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SAVE  ── write to durable key + mirror into users[] + currentUser
-// ─────────────────────────────────────────────────────────────────────────────
 const saveProfile = (data: ProfileData) => {
   try {
-    // 1. Durable profile (survives logout)
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
 
-    // 2. Mirror relevant fields into users[] so Account/Register reads stay consistent
     const username = localStorage.getItem('loggedInUsername');
     if (username) {
       const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
@@ -96,7 +78,6 @@ const saveProfile = (data: ProfileData) => {
       }
     }
 
-    // 3. Mirror into currentUser for same-session reads (optional but handy)
     const cu = localStorage.getItem('currentUser');
     if (cu) {
       const parsed = JSON.parse(cu);
@@ -107,21 +88,18 @@ const saveProfile = (data: ProfileData) => {
   } catch (e) { console.error('EditProfile save error:', e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CROP
-// ─────────────────────────────────────────────────────────────────────────────
 interface CropState { x: number; y: number; scale: number; }
 const CROP_SIZE = 260;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 const EditProfile: React.FC = () => {
   const history = useHistory();
   const [formData, setFormData]         = useState<ProfileData>(loadProfile);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isSaving, setIsSaving]         = useState(false);
   const [saved, setSaved]               = useState(false);
+
+  const [touched, setTouched]   = useState<Record<string, boolean>>({});
+  const [errors, setErrors]     = useState<Record<string, string>>({});
 
   // Photo / crop
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
@@ -131,6 +109,46 @@ const EditProfile: React.FC = () => {
   const dragStart    = useRef<{ mx: number; my: number; cx: number; cy: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropImgRef   = useRef<HTMLImageElement>(null);
+
+  const validateField = (key: string, value: string): string => {
+    const config = fieldConfig.find(f => f.key === key);
+    if (!config) return '';
+    if (!value.trim()) return config.errorMsg;
+    if (key === 'email') {
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(value.trim())) return 'Please enter a valid email address.';
+    }
+    return '';
+  };
+
+  const validateAll = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    const newTouched: Record<string, boolean> = {};
+    fieldConfig.forEach(f => {
+      newTouched[f.key] = true;
+      const val = (formData[f.key as keyof ProfileData] as string) ?? '';
+      const err = validateField(f.key, val);
+      if (err) newErrors[f.key] = err;
+    });
+    setTouched(newTouched);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (key: string, value: string) => {
+    setFocusedField(null);
+    setTouched(prev => ({ ...prev, [key]: true }));
+    const err = validateField(key, value);
+    setErrors(prev => ({ ...prev, [key]: err }));
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (touched[field]) {
+      const err = validateField(field, value);
+      setErrors(prev => ({ ...prev, [field]: err }));
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -178,10 +196,9 @@ const EditProfile: React.FC = () => {
     setRawImageSrc(null);
   }, [rawImageSrc, cropState]);
 
-  const handleChange = (field: string, value: string) =>
-    setFormData(prev => ({ ...prev, [field]: value }));
-
+  // ── Save ────────────────────────────────────────────────────────────────
   const handleSave = () => {
+    if (!validateAll()) return;
     setIsSaving(true);
     saveProfile(formData);
     setTimeout(() => {
@@ -195,41 +212,107 @@ const EditProfile: React.FC = () => {
   const professionalFields = fieldConfig.filter(f => f.section === 'professional');
 
   const renderField = (field: FieldConfig) => {
-    const isFocused = focusedField === field.key;
+    const isFocused  = focusedField === field.key;
+    const hasError   = touched[field.key] && !!errors[field.key];
+    const isValid    = touched[field.key] && !errors[field.key] &&
+                       !!(formData[field.key as keyof ProfileData] as string)?.trim();
+
+    const borderColor = hasError
+      ? '#e53935'
+      : isFocused
+        ? 'var(--c-purple)'
+        : isValid
+          ? '#34d399'
+          : 'var(--c-border)';
+
+    const boxShadow = hasError
+      ? '0 0 0 3px rgba(229,57,53,0.15)'
+      : isFocused
+        ? '0 0 0 3px var(--c-purple-glow)'
+        : 'none';
+
     return (
-      <div key={field.key} style={{
-        display: 'flex', alignItems: 'center', background: 'var(--c-surface-2)',
-        borderRadius: 12,
-        border: `1.5px solid ${isFocused ? 'var(--c-purple)' : 'var(--c-border)'}`,
-        boxShadow: isFocused ? '0 0 0 3px var(--c-purple-glow)' : 'none',
-        overflow: 'hidden', transition: 'border-color 0.2s, box-shadow 0.2s',
-      }}>
+      <div key={field.key}>
+        {/* Input row */}
         <div style={{
-          width: 44, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--c-purple)', fontSize: 18, flexShrink: 0,
-          background: 'var(--c-surface-3)', borderRight: '1.5px solid var(--c-border)',
+          display: 'flex', alignItems: 'center', background: 'var(--c-surface-2)',
+          borderRadius: hasError ? '12px 12px 6px 6px' : 12,
+          border: `1.5px solid ${borderColor}`,
+          boxShadow,
+          overflow: 'hidden', transition: 'border-color 0.2s, box-shadow 0.2s',
         }}>
-          <IonIcon icon={field.icon} />
+          {/* Icon side */}
+          <div style={{
+            width: 44, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: hasError ? '#e53935' : 'var(--c-purple)', fontSize: 18, flexShrink: 0,
+            background: hasError ? 'rgba(229,57,53,0.06)' : 'var(--c-surface-3)',
+            borderRight: `1.5px solid ${borderColor}`,
+            transition: 'color 0.2s, background 0.2s, border-color 0.2s',
+          }}>
+            <IonIcon icon={field.icon} />
+          </div>
+
+          {/* Input area */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '6px 12px' }}>
+            <span style={{
+              fontSize: 10, fontWeight: 600,
+              color: hasError ? '#e53935' : 'var(--c-text-muted)',
+              letterSpacing: '0.8px', textTransform: 'uppercase' as const,
+              marginBottom: 2, fontFamily: "'DM Sans', sans-serif",
+              transition: 'color 0.2s',
+            }}>
+              {field.label} <span style={{ color: hasError ? '#e53935' : 'var(--c-purple)', opacity: 0.7 }}>*</span>
+            </span>
+            <input
+              type={field.type}
+              value={formData[field.key as keyof ProfileData] as string ?? ''}
+              onChange={e => handleChange(field.key, e.target.value)}
+              onFocus={() => setFocusedField(field.key)}
+              onBlur={e => handleBlur(field.key, e.target.value)}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
+              style={{
+                width: '100%', background: 'transparent', border: 'none', outline: 'none',
+                fontSize: 14, fontWeight: 500, color: 'var(--c-text-primary)',
+                padding: 0, lineHeight: 1.4, fontFamily: "'DM Sans', sans-serif",
+              }}
+            />
+          </div>
+
+          {/* Status icon */}
+          {(hasError || isValid) && (
+            <div style={{ paddingRight: 12, flexShrink: 0 }}>
+              <IonIcon
+                icon={hasError ? alertCircleOutline : checkmarkCircleOutline}
+                style={{
+                  fontSize: 18,
+                  color: hasError ? '#e53935' : '#34d399',
+                  display: 'block',
+                }}
+              />
+            </div>
+          )}
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '6px 12px' }}>
-          <span style={{
-            fontSize: 10, fontWeight: 600, color: 'var(--c-text-muted)',
-            letterSpacing: '0.8px', textTransform: 'uppercase' as const,
-            marginBottom: 2, fontFamily: "'DM Sans', sans-serif",
-          }}>{field.label}</span>
-          <input
-            type={field.type}
-            value={formData[field.key as keyof ProfileData] as string ?? ''}
-            onChange={e => handleChange(field.key, e.target.value)}
-            onFocus={() => setFocusedField(field.key)}
-            onBlur={() => setFocusedField(null)}
-            style={{
-              width: '100%', background: 'transparent', border: 'none', outline: 'none',
-              fontSize: 14, fontWeight: 500, color: 'var(--c-text-primary)',
-              padding: 0, lineHeight: 1.4, fontFamily: "'DM Sans', sans-serif",
-            }}
-          />
-        </div>
+
+        {/* Error message */}
+        {hasError && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '6px 12px 7px',
+            background: 'rgba(229,57,53,0.06)',
+            border: '1.5px solid #e53935',
+            borderTop: 'none',
+            borderRadius: '0 0 8px 8px',
+            marginBottom: 2,
+          }}>
+            <IonIcon icon={alertCircleOutline} style={{ fontSize: 13, color: '#e53935', flexShrink: 0 }} />
+            <span style={{
+              fontSize: 11.5, color: '#e53935', fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              {errors[field.key]}
+            </span>
+          </div>
+        )}
       </div>
     );
   };
