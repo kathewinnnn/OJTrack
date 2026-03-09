@@ -15,6 +15,8 @@ import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Route, Redirect } from 'react-router-dom';
 
+import { ReportsProvider } from './pages/ReportsContext';
+
 // Pages
 import Splash              from './pages/Splash';
 import Login               from './pages/Login';
@@ -27,6 +29,7 @@ import Account             from './pages/Account';
 import ForgotPassword      from './pages/ForgotPassword';
 import UploadReport        from './pages/UploadReport';
 import EditAccount         from './pages/EditAccount';
+import ReportDetail        from './pages/ReportDetail';
 
 import SupervisorDashboard from './pages/supervisor/SupervisorDashboard';
 import Profile             from './pages/supervisor/Profile';
@@ -52,14 +55,9 @@ import AdminAssignment from './pages/admin/AdminAssignment';
 
 const App: React.FC = () => (
   <IonApp>
-    {/*
-      IonReactRouter + IonRouterOutlet MUST be used together.
-      Removed RouterSync and URLSync — those components called history.push()
-      which fights with IonReactRouter and causes views to not swap.
-    */}
     <IonReactRouter>
-      <IonRouterOutlet>
-        {/* Splash is the true entry — "/" redirects here */}
+      <ReportsProvider>
+        <IonRouterOutlet>
         <Route exact path="/splash"              component={Splash} />
 
         {/* Auth */}
@@ -75,6 +73,7 @@ const App: React.FC = () => (
         <Route exact path="/account"             component={Account} />
         <Route exact path="/upload-report"       component={UploadReport} />
         <Route exact path="/edit-account"        component={EditAccount} />
+        <Route exact path="/report-detail"       component={ReportDetail}/>
 
         {/* Supervisor */}
         <Route exact path="/supervisor-dashboard" component={SupervisorDashboard} />
@@ -103,6 +102,7 @@ const App: React.FC = () => (
         {/* Catch-all → splash */}
         <Redirect to="/splash" />
       </IonRouterOutlet>
+      </ReportsProvider>
     </IonReactRouter>
   </IonApp>
 );

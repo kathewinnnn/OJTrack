@@ -9,6 +9,7 @@ import {
 } from 'ionicons/icons';
 import BottomNav from '../components/BottomNav';
 import LogoutModal from '../components/LogoutModal';
+import TermsModal from '../components/TermsModal';
 
 // ─── Same durable key used by EditAccount ─────────────────────────────────────
 const STUDENT_PROFILE_KEY = 'studentProfile';
@@ -33,7 +34,6 @@ const loadUser = (): User => {
       };
     }
 
-    // Seed on first visit (before EditAccount has run)
     const username = localStorage.getItem('loggedInUsername');
     const getSrc = () => {
       const cu = localStorage.getItem('currentUser');
@@ -72,20 +72,21 @@ const Account: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showLogoutModal, setShowLogoutModal]   = useState(false);
   const [isLoggingOut, setIsLoggingOut]         = useState(false);
+  const [showTermsModal, setShowTermsModal]     = useState(false);
 
-  // Refresh whenever the component mounts (i.e. after returning from EditAccount)
   useEffect(() => { setUser(loadUser()); }, []);
 
   const menuItems = [
-    { icon: settingsOutline,      title: 'Account Settings',  subtitle: 'Manage your preferences',  badge: null,                               badgeColor: '' },
-    { icon: notificationsOutline, title: 'Notifications',     subtitle: 'Configure alert settings', badge: notificationsEnabled ? 'On' : 'Off', badgeColor: notificationsEnabled ? 'success' : 'medium' },
-    { icon: lockClosedOutline,    title: 'Privacy & Security',subtitle: 'Control your data',        badge: null,                               badgeColor: '' },
-    { icon: documentTextOutline,  title: 'Terms of Service',  subtitle: 'Read our policies',        badge: null,                               badgeColor: '' },
-    { icon: helpCircleOutline,    title: 'Help & Support',    subtitle: 'Get assistance',           badge: null,                               badgeColor: '' },
+    {
+      icon: documentTextOutline,
+      title: 'Terms of Service',
+      subtitle: 'Read our policies',
+      badge: null, badgeColor: '',
+      onPress: () => setShowTermsModal(true),
+    },
   ];
 
-  const confirmLogout     = () => { setIsLoggingOut(true); };
-  // NOTE: studentProfile and users[] are NOT cleared — edits survive re-login
+  const confirmLogout = () => { setIsLoggingOut(true); };
   const handleLogoutComplete = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('currentUser');
@@ -101,7 +102,7 @@ const Account: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="acc-content" scrollY={!showLogoutModal}>
+      <IonContent fullscreen className="acc-content" scrollY={!showLogoutModal && !showTermsModal}>
         <div className="acc-container">
 
           {/* Profile Hero */}
@@ -168,14 +169,14 @@ const Account: React.FC = () => {
             </div>
           </div>
 
-          {/* Settings */}
+          {/* Settings & Support */}
           <div className="acc-section-card">
             <div className="acc-section-header">
               <span className="acc-section-title">Settings &amp; Support</span>
             </div>
             <div className="acc-menu-list">
               {menuItems.map((item, i) => (
-                <button key={i} className="acc-menu-item">
+                <button key={i} className="acc-menu-item" onClick={item.onPress}>
                   <div className="acc-menu-icon"><IonIcon icon={item.icon} /></div>
                   <div className="acc-menu-text">
                     <p className="acc-menu-title">{item.title}</p>
@@ -198,6 +199,7 @@ const Account: React.FC = () => {
       </IonContent>
 
       <BottomNav activeTab="account" />
+
       <LogoutModal
         isOpen={showLogoutModal}
         onConfirm={confirmLogout}
@@ -205,6 +207,14 @@ const Account: React.FC = () => {
         isLoading={isLoggingOut}
         onComplete={handleLogoutComplete}
       />
+
+      {/* Terms of Service modal — view-only mode */}
+      {showTermsModal && (
+        <TermsModal
+          mode="view"
+          onClose={() => setShowTermsModal(false)}
+        />
+      )}
     </IonPage>
   );
 };

@@ -45,7 +45,6 @@ const Dashboard: React.FC<DashboardProps> = () => {
               <div className="dash-avatar">KG</div>
               <div className="dash-header-actions">
                 <button className="dash-icon-btn"><IonIcon icon={notificationsOutline} /></button>
-                <button className="dash-icon-btn"><IonIcon icon={settingsOutline} /></button>
               </div>
             </div>
             <div className="dash-greeting">

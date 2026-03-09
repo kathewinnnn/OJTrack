@@ -1,11 +1,5 @@
-/* ============================================================
-   EditAccount.css — Light mode
-   Primary accent  : #5f0076  (deep purple)
-   Secondary accent: #4a4a4a  (charcoal grey)
-   Surface bg      : #f5f5f7
-   ============================================================ */
-
 :root {
+  --c-purple:        #5f0076;
   --ea-purple:        #5f0076;
   --ea-purple-light:  #8b00a8;
   --ea-purple-dim:    rgba(95, 0, 118, 0.08);
@@ -52,7 +46,7 @@
 .ea-hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #f0e6f6 0%, #f5f5f7 55%, #ede8f5 100%);
+  background: linear-gradient(135deg, var(--c-purple) 0%, #2e003a 60%, var(--c-dark-deep) 100%);
   z-index: 0;
 }
 
@@ -112,14 +106,14 @@
 .ea-hero-title {
   font-size: 22px;
   font-weight: 700;
-  color: var(--ea-purple);
+  color: white;
   margin: 0 0 2px;
   letter-spacing: -0.3px;
 }
 
 .ea-hero-sub {
   font-size: 13px;
-  color: var(--ea-text-sub);
+  color: white;
   margin: 0;
 }
 
@@ -446,4 +440,18 @@
 /* ---------- Bottom spacing ---------- */
 .ea-bottom-space {
   height: 40px;
+}
+
+.ea-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b5f77' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.ea-select:focus {
+  border-color: #5f0076;
 }

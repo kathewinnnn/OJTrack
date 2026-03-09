@@ -1,53 +1,143 @@
 import React, { useState } from 'react';
-import { IonPage, IonContent, IonText, IonIcon } from '@ionic/react';
-import { documentTextOutline, downloadOutline, eyeOutline, addOutline, calendarOutline, checkmarkCircleOutline, timeOutline, createOutline, searchOutline, closeOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import {
+  documentTextOutline, downloadOutline, eyeOutline, addOutline,
+  calendarOutline, checkmarkCircleOutline, timeOutline,
+  searchOutline, closeOutline, printOutline,
+  createOutline, trashOutline, closeCircleOutline,
+  alertCircleOutline, saveOutline,
+} from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import { useReports, Report } from './ReportsContext';
+import { printReport } from './Print';
+import './ReportsModal.css';
 
-interface Report {
+/* ── Edit modal state ──────────────────────────────────────────────────── */
+interface EditState {
   id: number;
   title: string;
   date: string;
-  status: 'Submitted' | 'Pending' | 'Draft';
   type: string;
+  status: 'Submitted' | 'Pending';
   description: string;
+  fullDetails: string;
 }
+
+const REPORT_TYPES = ['Daily', 'Weekly', 'Monthly', 'Midterm', 'Final', 'Incident'];
 
 const Reports: React.FC = () => {
   const history = useHistory();
+  const { reports, updateReport, deleteReport } = useReports();
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadedIds, setDownloadedIds] = useState<Set<number>>(new Set());
 
-  const reports: Report[] = [
-    { id: 1, title: 'Weekly Report – Week 1', date: 'Jan 6, 2025', status: 'Submitted', type: 'Weekly', description: 'First week of OJT activities and observations' },
-    { id: 2, title: 'Weekly Report – Week 2', date: 'Jan 13, 2025', status: 'Submitted', type: 'Weekly', description: 'Second week progress and learnings' },
-    { id: 3, title: 'Weekly Report – Week 3', date: 'Jan 20, 2025', status: 'Pending', type: 'Weekly', description: 'Third week documentation pending' },
-    { id: 4, title: 'Monthly Report – January', date: 'Jan 31, 2025', status: 'Draft', type: 'Monthly', description: 'Monthly comprehensive report draft' },
-    { id: 5, title: 'Weekly Report – Week 4', date: 'Feb 3, 2025', status: 'Submitted', type: 'Weekly', description: 'Fourth week summary and achievements' },
-    { id: 6, title: 'Midterm Report', date: 'Feb 10, 2025', status: 'Pending', type: 'Midterm', description: 'Midterm evaluation and progress report' },
-  ];
+  // Edit modal
+  const [editState, setEditState] = useState<EditState | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Delete confirmation modal
+  const [deleteTarget, setDeleteTarget] = useState<Report | null>(null);
 
   const stats = {
     total: reports.length,
-    submitted: reports.filter(r => r.status === 'Submitted').length,
-    pending: reports.filter(r => r.status === 'Pending').length,
-    draft: reports.filter(r => r.status === 'Draft').length,
+    submitted: reports.filter((r: Report) => r.status === 'Submitted').length,
+    pending: reports.filter((r: Report) => r.status === 'Pending').length,
   };
 
   const statusConfig: Record<string, { color: string; bg: string; icon: string }> = {
     'Submitted': { color: '#34d399', bg: 'rgba(52,211,153,0.12)', icon: checkmarkCircleOutline },
     'Pending':   { color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', icon: timeOutline },
-    'Draft':     { color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', icon: createOutline },
   };
 
-  const filtered = reports.filter(r => {
-    const q = searchText.toLowerCase();
-    const matches = r.title.toLowerCase().includes(q) || r.type.toLowerCase().includes(q);
-    const filterMatch = selectedFilter === 'all' || r.status.toLowerCase() === selectedFilter;
-    return matches && filterMatch;
-  });
+  const filtered = reports
+    .filter((r: Report) => {
+      const q = searchText.toLowerCase();
+      const matches = r.title.toLowerCase().includes(q) || r.type.toLowerCase().includes(q);
+      const filterMatch = selectedFilter === 'all' || r.status.toLowerCase() === selectedFilter;
+      return matches && filterMatch;
+    })
+    .sort((a: Report, b: Report) => b.submittedAt - a.submittedAt);
 
-  const filters = ['all', 'submitted', 'pending', 'draft'];
+  const filters = ['all', 'submitted', 'pending'];
+
+  /* ── Download ─────────────────────────────────────────────────────────── */
+  const handleDownload = (report: Report) => {
+    setDownloadingId(report.id);
+    const content = [
+      `REPORT TITLE: ${report.title}`,
+      `TYPE: ${report.type}`,
+      `DATE: ${report.date}`,
+      `STATUS: ${report.status}`,
+      ``,
+      `DESCRIPTION`,
+      `------------`,
+      report.description,
+      ``,
+      `FULL DETAILS`,
+      `------------`,
+      report.fullDetails || 'No additional details.',
+      ``,
+      `ATTACHMENTS`,
+      `------------`,
+      report.attachments && report.attachments.length > 0
+        ? report.attachments.join(', ')
+        : 'No attachments.',
+    ].join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${report.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      setDownloadingId(null);
+      setDownloadedIds(prev => new Set(prev).add(report.id));
+    }, 800);
+  };
+
+  /* ── Edit handlers ────────────────────────────────────────────────────── */
+  const openEdit = (report: Report) => {
+    setEditState({
+      id: report.id,
+      title: report.title,
+      date: report.date,
+      type: report.type,
+      status: report.status,
+      description: report.description,
+      fullDetails: report.fullDetails ?? '',
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editState) return;
+    setIsSaving(true);
+    await new Promise(res => setTimeout(res, 600));
+    updateReport(editState.id, {
+      title: editState.title.trim(),
+      type: editState.type,
+      status: editState.status,
+      description: editState.description.trim(),
+      fullDetails: editState.fullDetails.trim(),
+    });
+    setIsSaving(false);
+    setEditState(null);
+  };
+
+  /* ── Delete handlers ──────────────────────────────────────────────────── */
+  const confirmDelete = (report: Report) => setDeleteTarget(report);
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteReport(deleteTarget.id);
+    setDeleteTarget(null);
+  };
 
   return (
     <IonPage>
@@ -80,11 +170,6 @@ const Reports: React.FC = () => {
               <IonIcon icon={timeOutline} className="rp-stat-icon" />
               <span className="rp-stat-num">{stats.pending}</span>
               <span className="rp-stat-lbl">Pending</span>
-            </div>
-            <div className="rp-stat-card rp-stat-draft">
-              <IonIcon icon={createOutline} className="rp-stat-icon" />
-              <span className="rp-stat-num">{stats.draft}</span>
-              <span className="rp-stat-lbl">Drafts</span>
             </div>
           </div>
 
@@ -126,41 +211,90 @@ const Reports: React.FC = () => {
 
           {/* Report Cards */}
           <div className="rp-list">
-            {filtered.map(report => {
-              const cfg = statusConfig[report.status];
-              return (
-                <div key={report.id} className="rp-card">
-                  <div className="rp-card-top">
-                    <span className="rp-type-chip">
-                      <IonIcon icon={documentTextOutline} />
-                      {report.type}
-                    </span>
-                    <span className="rp-status-chip" style={{ color: cfg.color, background: cfg.bg }}>
-                      <IonIcon icon={cfg.icon} />
-                      {report.status}
-                    </span>
-                  </div>
-                  <div className="rp-card-body">
-                    <p className="rp-card-title">{report.title}</p>
-                    <p className="rp-card-desc">{report.description}</p>
-                  </div>
-                  <div className="rp-card-footer">
-                    <div className="rp-card-date">
-                      <IonIcon icon={calendarOutline} />
-                      {report.date}
+            {filtered.length === 0 ? (
+              <div className="rp-empty">
+                <IonIcon icon={documentTextOutline} />
+                <p>No reports found.</p>
+              </div>
+            ) : (
+              filtered.map((report: Report) => {
+                const cfg = statusConfig[report.status];
+                const isDownloading = downloadingId === report.id;
+                const isDownloaded = downloadedIds.has(report.id);
+                return (
+                  <div key={report.id} className="rp-card">
+                    <div className="rp-card-top">
+                      <span className="rp-type-chip">
+                        <IonIcon icon={documentTextOutline} />
+                        {report.type}
+                      </span>
+                      <div className="rp-card-top-right">
+                        <span className="rp-status-chip" style={{ color: cfg.color, background: cfg.bg }}>
+                          <IonIcon icon={cfg.icon} />
+                          {report.status}
+                        </span>
+                        <div className="rp-card-corner-actions">
+                          <button
+                            className="rp-side-btn rp-side-edit"
+                            onClick={() => openEdit(report)}
+                            title="Edit report"
+                          >
+                            <IonIcon icon={createOutline} />
+                          </button>
+                          <button
+                            className="rp-side-btn rp-side-delete"
+                            onClick={() => confirmDelete(report)}
+                            title="Delete report"
+                          >
+                            <IonIcon icon={trashOutline} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="rp-card-actions">
-                      <button className="rp-btn rp-btn-view">
-                        <IonIcon icon={eyeOutline} /> View
-                      </button>
-                      <button className="rp-btn rp-btn-dl">
-                        <IonIcon icon={downloadOutline} /> Download
-                      </button>
+
+                    {/* Card body */}
+                    <div className="rp-card-body">
+                      <p className="rp-card-title">{report.title}</p>
+                      <p className="rp-card-desc">{report.description}</p>
+                    </div>
+
+                    <div className="rp-card-footer">
+                      <div className="rp-card-date">
+                        <IonIcon icon={calendarOutline} />
+                        {report.date}
+                      </div>
+                      <div className="rp-card-actions">
+                        <button
+                          className="rp-btn rp-btn-view"
+                          onClick={() => history.push('/report-detail', { report })}
+                        >
+                          <IonIcon icon={eyeOutline} /> View
+                        </button>
+                        <button
+                          className="rp-btn rp-btn-print"
+                          onClick={() => printReport(report)}
+                        >
+                          <IonIcon icon={printOutline} /> Print
+                        </button>
+                        <button
+                          className={`rp-btn rp-btn-dl ${isDownloading ? 'rp-btn-dl--loading' : ''} ${isDownloaded ? 'rp-btn-dl--done' : ''}`}
+                          onClick={() => handleDownload(report)}
+                          disabled={isDownloading}
+                        >
+                          {isDownloading ? (
+                            <><span className="rp-btn-spinner" /> Saving…</>
+                          ) : isDownloaded ? (
+                            <><IonIcon icon={checkmarkCircleOutline} /> Saved</>
+                          ) : (
+                            <><IonIcon icon={downloadOutline} /> Download</>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
         </div>
@@ -174,6 +308,147 @@ const Reports: React.FC = () => {
         </div>
 
       </IonContent>
+
+      {/* ── EDIT MODAL ──────────────────────────────────────────────────── */}
+      {editState && (
+        <div className="rp-modal-overlay" onClick={() => setEditState(null)}>
+          <div className="rp-modal" onClick={e => e.stopPropagation()}>
+            <div className="rp-modal-header">
+              <div className="rp-modal-title-row">
+                <IonIcon icon={createOutline} className="rp-modal-icon" />
+                <h2 className="rp-modal-title">Edit Report</h2>
+              </div>
+              <button className="rp-modal-close" onClick={() => setEditState(null)}>
+                <IonIcon icon={closeCircleOutline} />
+              </button>
+            </div>
+
+            <div className="rp-modal-body">
+
+              {/* Title */}
+              <div className="rp-field">
+                <label className="rp-field-label">Title</label>
+                <input
+                  className="rp-field-input"
+                  value={editState.title}
+                  onChange={e => setEditState(s => s && ({ ...s, title: e.target.value }))}
+                  maxLength={80}
+                  placeholder="Report title"
+                />
+              </div>
+
+              {/* Type + Status row */}
+              <div className="rp-field-row">
+                <div className="rp-field">
+                  <label className="rp-field-label">Type</label>
+                  <select
+                    className="rp-field-select"
+                    value={editState.type}
+                    onChange={e => setEditState(s => s && ({ ...s, type: e.target.value }))}
+                  >
+                    {REPORT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="rp-field">
+                  <label className="rp-field-label">Status</label>
+                  <select
+                    className="rp-field-select"
+                    value={editState.status}
+                    onChange={e => setEditState(s => s && ({ ...s, status: e.target.value as 'Submitted' | 'Pending' }))}
+                  >
+                    <option value="Submitted">Submitted</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="rp-field">
+                <label className="rp-field-label">Description</label>
+                <textarea
+                  className="rp-field-textarea"
+                  value={editState.description}
+                  onChange={e => setEditState(s => s && ({ ...s, description: e.target.value }))}
+                  rows={3}
+                  maxLength={600}
+                  placeholder="Short description"
+                />
+                <span className="rp-field-count">{editState.description.length}/600</span>
+              </div>
+
+              {/* Full Details */}
+              <div className="rp-field">
+                <label className="rp-field-label">Full Details</label>
+                <textarea
+                  className="rp-field-textarea"
+                  value={editState.fullDetails}
+                  onChange={e => setEditState(s => s && ({ ...s, fullDetails: e.target.value }))}
+                  rows={5}
+                  maxLength={2000}
+                  placeholder="In-depth report details"
+                />
+                <span className="rp-field-count">{editState.fullDetails.length}/2000</span>
+              </div>
+
+            </div>
+
+            <div className="rp-modal-footer">
+              <button className="rp-modal-btn rp-modal-cancel" onClick={() => setEditState(null)}>
+                Cancel
+              </button>
+              <button
+                className={`rp-modal-btn rp-modal-save ${isSaving ? 'rp-modal-save--loading' : ''}`}
+                onClick={handleSaveEdit}
+                disabled={isSaving || !editState.title.trim() || !editState.description.trim()}
+              >
+                {isSaving ? (
+                  <><span className="rp-btn-spinner" /> Saving…</>
+                ) : (
+                  <><IonIcon icon={saveOutline} /> Save Changes</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DELETE CONFIRMATION MODAL ────────────────────────────────────── */}
+      {deleteTarget && (
+        <div className="rp-modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="rp-modal rp-modal--delete" onClick={e => e.stopPropagation()}>
+            <div className="rp-modal-header">
+              <div className="rp-modal-title-row">
+                <IonIcon icon={alertCircleOutline} className="rp-modal-icon rp-modal-icon--danger" />
+                <h2 className="rp-modal-title">Delete Report?</h2>
+              </div>
+              <button className="rp-modal-close" onClick={() => setDeleteTarget(null)}>
+                <IonIcon icon={closeCircleOutline} />
+              </button>
+            </div>
+
+            <div className="rp-modal-body rp-delete-body">
+              <p className="rp-delete-msg">
+                You're about to permanently delete:
+              </p>
+              <div className="rp-delete-card">
+                <p className="rp-delete-name">{deleteTarget.title}</p>
+                <p className="rp-delete-meta">{deleteTarget.type} · {deleteTarget.date}</p>
+              </div>
+              <p className="rp-delete-warn">This action cannot be undone.</p>
+            </div>
+
+            <div className="rp-modal-footer">
+              <button className="rp-modal-btn rp-modal-cancel" onClick={() => setDeleteTarget(null)}>
+                Cancel
+              </button>
+              <button className="rp-modal-btn rp-modal-delete" onClick={handleDelete}>
+                <IonIcon icon={trashOutline} /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <BottomNav activeTab="reports" />
     </IonPage>
   );

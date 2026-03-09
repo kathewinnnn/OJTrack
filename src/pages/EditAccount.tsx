@@ -9,42 +9,30 @@ import {
 import { useHistory } from 'react-router-dom';
 import './EditAccount.css';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STORAGE KEY  — never wiped by logout, so edits survive across sessions
-// ─────────────────────────────────────────────────────────────────────────────
 const STUDENT_PROFILE_KEY = 'studentProfile';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────────────────────────────────────
 interface StudentProfile {
-  // Editable
   name: string; email: string; phone: string; address: string;
   profilePhoto: string | null;
-  // Read-only (locked — set at registration, never changed here)
   program: string; year: string; studentId: string;
 }
 
 interface FormField {
   key: string; label: string; icon: string;
-  type: string; placeholder: string; editable: boolean; hint?: string;
+  type: string; placeholder: string; editable: boolean;
+  hint?: string;
+  options?: string[]; // if present, render a <select>
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOAD  ── durable key first, then seed from users[] on first visit
-// ─────────────────────────────────────────────────────────────────────────────
 const loadStudentProfile = (): StudentProfile => {
   try {
     const saved = localStorage.getItem(STUDENT_PROFILE_KEY);
-    if (saved) return JSON.parse(saved);           // already edited → always wins
+    if (saved) return JSON.parse(saved);
 
-    // Seed from registration data
     const username = localStorage.getItem('loggedInUsername');
     const getUserData = () => {
-      // Try currentUser first (fastest)
       const cu = localStorage.getItem('currentUser');
       if (cu) return JSON.parse(cu);
-      // Fallback: scan users[]
       if (username) {
         const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
         return users.find(u => u.username === username) ?? null;
@@ -61,10 +49,9 @@ const loadStudentProfile = (): StudentProfile => {
         address:      src.address    ?? '',
         profilePhoto: src.profilePhoto ?? null,
         program:      src.program    ?? '',
-        year:         src.year       ?? '',
+        year:         src.year       ?? '1st Year',
         studentId:    src.studentId  ?? '',
       };
-      // Persist immediately so future loads hit the saved branch
       localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(seeded));
       return seeded;
     }
@@ -78,15 +65,10 @@ const loadStudentProfile = (): StudentProfile => {
   };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SAVE  ── write to durable key + mirror into users[] entry
-// ─────────────────────────────────────────────────────────────────────────────
 const saveStudentProfile = (data: StudentProfile) => {
   try {
-    // 1. Durable profile (survives logout)
     localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(data));
 
-    // 2. Mirror editable fields into users[] so other pages stay consistent
     const username = localStorage.getItem('loggedInUsername');
     if (username) {
       const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
@@ -96,11 +78,11 @@ const saveStudentProfile = (data: StudentProfile) => {
         users[idx].phone        = data.phone;
         users[idx].address      = data.address;
         users[idx].profilePhoto = data.profilePhoto;
+        users[idx].year         = data.year;
         localStorage.setItem('users', JSON.stringify(users));
       }
     }
 
-    // 3. Mirror into currentUser for same-session reads
     const cu = localStorage.getItem('currentUser');
     if (cu) {
       const parsed = JSON.parse(cu);
@@ -108,20 +90,16 @@ const saveStudentProfile = (data: StudentProfile) => {
       parsed.phone        = data.phone;
       parsed.address      = data.address;
       parsed.profilePhoto = data.profilePhoto;
+      parsed.year         = data.year;
       localStorage.setItem('currentUser', JSON.stringify(parsed));
     }
   } catch (e) { console.error('EditAccount save error:', e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CROP
-// ─────────────────────────────────────────────────────────────────────────────
 interface CropState { x: number; y: number; scale: number; }
 const CROP_SIZE = 260;
+const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 const EditAccount: React.FC = () => {
   const history = useHistory();
   const [isSaving, setIsSaving]   = useState(false);
@@ -130,7 +108,6 @@ const EditAccount: React.FC = () => {
   const [touched, setTouched]     = useState<Record<string, boolean>>({});
   const [errors, setErrors]       = useState<Record<string, string>>({});
 
-  // Photo / crop
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const [isCropping, setIsCropping]   = useState(false);
   const [cropState, setCropState]     = useState<CropState>({ x: 0, y: 0, scale: 1 });
@@ -190,8 +167,9 @@ const EditAccount: React.FC = () => {
     { key: 'email',     label: 'Email Address',    icon: mailOutline,            type: 'email', placeholder: 'your@email.com',   editable: true },
     { key: 'phone',     label: 'Phone Number',     icon: callOutline,            type: 'tel',   placeholder: '+63 9XX XXX XXXX', editable: true },
     { key: 'address',   label: 'Home Address',     icon: locationOutline,        type: 'text',  placeholder: 'City, Province',   editable: true },
+    // ← Year Level is now editable with a dropdown
+    { key: 'year',      label: 'Year Level',       icon: calendarOutline,        type: 'select', placeholder: '1st Year',        editable: true,  options: YEAR_OPTIONS },
     { key: 'program',   label: 'Academic Program', icon: schoolOutline,          type: 'text',  placeholder: 'Your program',     editable: false, hint: 'Contact your coordinator to change' },
-    { key: 'year',      label: 'Year Level',       icon: calendarOutline,        type: 'text',  placeholder: '3rd Year',         editable: false, hint: 'Updated automatically' },
     { key: 'studentId', label: 'Student ID',       icon: shieldCheckmarkOutline, type: 'text',  placeholder: 'A00-00000',        editable: false, hint: 'Cannot be changed' },
   ];
 
@@ -226,7 +204,6 @@ const EditAccount: React.FC = () => {
     }, 1800);
   };
 
-  // Success screen
   if (saved) {
     return (
       <IonPage>
@@ -261,7 +238,6 @@ const EditAccount: React.FC = () => {
             </div>
           </div>
 
-          {/* Avatar in hero */}
           <div className="ea-avatar-wrap">
             {form.profilePhoto ? (
               <div className="ea-avatar" style={{ overflow: 'hidden', background: 'transparent', padding: 0 }}>
@@ -320,14 +296,29 @@ const EditAccount: React.FC = () => {
                   <IonIcon icon={field.icon} />{field.label}
                 </label>
                 <div className="ea-input-wrap">
-                  <input
-                    type={field.type} className="ea-input"
-                    placeholder={field.placeholder}
-                    value={(form as any)[field.key] ?? ''}
-                    onChange={e => handleChange(field.key, e.target.value)}
-                    onBlur={() => handleBlur(field.key)}
-                  />
-                  {touched[field.key] && !errors[field.key] && (form as any)[field.key] && (
+                  {field.options ? (
+                    /* ── Year Level dropdown ── */
+                    <select
+                      className="ea-input ea-select"
+                      value={(form as any)[field.key] ?? ''}
+                      onChange={e => handleChange(field.key, e.target.value)}
+                      onBlur={() => handleBlur(field.key)}
+                    >
+                      {field.options.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type} className="ea-input"
+                      placeholder={field.placeholder}
+                      value={(form as any)[field.key] ?? ''}
+                      onChange={e => handleChange(field.key, e.target.value)}
+                      onBlur={() => handleBlur(field.key)}
+                    />
+                  )}
+                  {/* Valid tick — not shown for selects since they always have a value */}
+                  {!field.options && touched[field.key] && !errors[field.key] && (form as any)[field.key] && (
                     <IonIcon icon={checkmarkCircleOutline} className="ea-valid-icon" />
                   )}
                 </div>
