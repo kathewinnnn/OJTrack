@@ -13,7 +13,8 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '7:30 AM',
     timeOut: '5:00 PM',
     status: 'pending',
-    description: 'Completed internship tasks for the day including documentation and testing.'
+    description: 'Completed internship tasks for the day including documentation and testing.',
+    attachment: 'weekly_report_kg.pdf'
   },
   {
     id: 'A23-00503',
@@ -25,7 +26,8 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '8:30 AM',
     timeOut: '5:00 PM',
     status: 'approved',
-    description: 'Assisted with UI design updates and attended team stand-up.'
+    description: 'Assisted with UI design updates and attended team stand-up.',
+    attachment: 'weekly_report_sl.pdf'
   },
   {
     id: 'A23-00504',
@@ -37,7 +39,8 @@ const REPORTS_DATA: ReportRecord[] = [
     timeIn: '7:30 AM',
     timeOut: '5:00 PM',
     status: 'declined',
-    description: 'Report content was incomplete. Missing task summary and supervisor signature.'
+    description: 'Report content was incomplete. Missing task summary and supervisor signature.',
+    attachment: 'weekly_report_rr.pdf'
   },
 ];
 

@@ -75,30 +75,13 @@ const AdminTrainees: React.FC = () => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Only show scrollbar when content actually overflows the viewport height */
   scrollbar-gutter: stable;
 }
-
-/* Custom scrollbar — visible only when scrolling is needed */
-.page-scroll-area::-webkit-scrollbar {
-  width: 6px;
-}
-.page-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-.page-scroll-area::-webkit-scrollbar-thumb {
-  background: rgba(95, 0, 118, 0.22);
-  border-radius: 99px;
-  transition: background .2s;
-}
-.page-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(95, 0, 118, 0.45);
-}
-/* Firefox */
-.page-scroll-area {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(95,0,118,.22) transparent;
-}
+.page-scroll-area::-webkit-scrollbar { width: 6px; }
+.page-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.page-scroll-area::-webkit-scrollbar-thumb { background: rgba(95, 0, 118, 0.22); border-radius: 99px; transition: background .2s; }
+.page-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(95, 0, 118, 0.45); }
+.page-scroll-area { scrollbar-width: thin; scrollbar-color: rgba(95,0,118,.22) transparent; }
 
 .topbar { height: 60px; background: var(--surface); border-bottom: 1px solid var(--rule); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 5; box-shadow: var(--sh-sm); }
 .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--ink-3); }
@@ -111,7 +94,7 @@ const AdminTrainees: React.FC = () => {
 .topbar-btn:hover { background: var(--brand-soft); border-color: var(--brand-glow); color: var(--brand); }
 .topbar-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-.page-content { padding: 28px 32px 48px; } /* scroll handled by page-scroll-area */
+.page-content { padding: 28px 32px 48px; }
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
 .page-header-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; }
 .page-header-sub { margin-top: 5px; font-size: .875rem; color: var(--ink-3); font-weight: 400; }
@@ -138,15 +121,72 @@ const AdminTrainees: React.FC = () => {
 .stat-val { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--ink); line-height: 1.1; }
 
 /* FILTERS */
-.filters-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-lg); padding: 14px 20px; box-shadow: var(--sh-sm); }
-.search-wrap { position: relative; flex: 1; max-width: 420px; }
-.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
-.search-input { width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid var(--rule); border-radius: var(--r-full); font-size: .875rem; color: var(--ink); background: var(--bg); font-family: 'DM Sans', sans-serif; transition: all .18s var(--ease); outline: none; }
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: 12px 20px;
+  box-shadow: var(--sh-sm);
+  flex-wrap: nowrap;
+}
+.search-wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 420px;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  stroke: var(--ink-3);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px 9px 36px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-full);
+  font-size: .875rem;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  transition: all .18s var(--ease);
+  outline: none;
+}
 .search-input::placeholder { color: var(--ink-3); }
 .search-input:focus { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px var(--brand-glow); }
 .filter-sep { width: 1px; height: 28px; background: var(--rule); flex-shrink: 0; }
+.filter-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .filter-label { font-size: .8rem; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
-.filter-select { padding: 8px 32px 8px 12px; border: 1.5px solid var(--rule); border-radius: var(--r-md); font-size: .875rem; color: var(--ink); background: var(--bg); cursor: pointer; font-family: 'DM Sans', sans-serif; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b6e89' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: all .18s var(--ease); }
+.filter-select {
+  padding: 8px 32px 8px 12px;
+  border: 1.5px solid var(--rule);
+  border-radius: var(--r-md);
+  font-size: .875rem;
+  color: var(--ink);
+  background: var(--bg);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b6e89' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all .18s var(--ease);
+  white-space: nowrap;
+}
 .filter-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); }
 
 /* TABLE */
@@ -196,7 +236,14 @@ const AdminTrainees: React.FC = () => {
 
 @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .list-col-header, .trainee-row { grid-template-columns: 1.3fr 1.1fr 140px 90px; } }
 @media (max-width: 840px) { .list-col-header { display: none; } .trainee-row { grid-template-columns: 1fr; gap: 12px; } .trainee-office { margin-left: 56px; padding-right: 0; } .trainee-actions { margin-left: 56px; } .page-content { padding: 20px 16px 40px; } .topbar { padding: 0 16px; } }
-@media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr 1fr; } .filters-bar { flex-wrap: wrap; } .search-wrap { max-width: 100%; } .page-header { flex-direction: column; gap: 12px; } }
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .filters-bar { flex-wrap: wrap; gap: 10px; }
+  .search-wrap { max-width: 100%; flex: 1 1 100%; }
+  .filter-sep { display: none; }
+  .filter-group { flex: 0 0 auto; }
+  .page-header { flex-direction: column; gap: 12px; }
+}
       `}</style>
 
       {/* ─── TOPBAR — sticky, outside scroll area ───────────────────────── */}
@@ -269,15 +316,17 @@ const AdminTrainees: React.FC = () => {
           <div className="filters-bar">
             <div className="search-wrap">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input className="search-input" type="text" placeholder="Search by name, ID, or office…" />
+              <input className="search-input" type="text" placeholder="     Search by name, ID, or office…" />
             </div>
             <div className="filter-sep"></div>
-            <label className="filter-label" htmlFor="sf">Status</label>
-            <select className="filter-select" id="sf">
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div className="filter-group">
+              <label className="filter-label" htmlFor="sf">Status</label>
+              <select className="filter-select" id="sf">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
           </div>
 
           {/* Trainees Table */}

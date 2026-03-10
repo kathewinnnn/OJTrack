@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { IonPage, IonContent, IonIcon } from '@ionic/react';
+import React, { useState } from 'react';
+import { IonPage, IonContent, IonIcon, useIonViewWillEnter } from '@ionic/react';
 import {
   personCircleOutline, mailOutline, businessOutline, settingsOutline,
-  cameraOutline, logOutOutline, lockClosedOutline, notificationsOutline,
-  chevronForwardOutline, createOutline, documentTextOutline, eyeOutline, eyeOffOutline,
+  cameraOutline, logOutOutline, lockClosedOutline,
+  createOutline, documentTextOutline, eyeOutline, eyeOffOutline,
+  personOutline, calendarOutline, transgenderOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import SupervisorBottomNav from '../../components/SupervisorBottomNav';
@@ -14,13 +15,16 @@ import './supervisor.css';
 const PROFILE_KEY = 'supervisorProfile';
 
 interface ProfileData {
-  fullName: string; email: string; employeeId: string;
-  department: string; role: string; profilePhoto: string | null;
+  fullName: string; username: string; email: string; gender: string; birthday: string;
+  employeeId: string; department: string; role: string; profilePhoto: string | null;
 }
 
 const DEFAULT_PROFILE: ProfileData = {
   fullName:     'Dr. Mingyu Kim',
+  username:     '',
   email:        'mingyu@university.edu',
+  gender:       '',
+  birthday:     '',
   employeeId:   'UIP-2024-001',
   department:   'Information Technology Department',
   role:         'Senior IT Supervisor',
@@ -29,48 +33,54 @@ const DEFAULT_PROFILE: ProfileData = {
 
 const loadProfile = (): ProfileData => {
   try {
-    const saved = localStorage.getItem(PROFILE_KEY);
-    if (saved) return JSON.parse(saved);
+    const loggedInUsername = localStorage.getItem('loggedInUsername') ?? '';
+    const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
+    const found = users.find(u => u.username === loggedInUsername);
 
-    const username = localStorage.getItem('loggedInUsername');
-    if (username) {
-      const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
-      const found = users.find(u => u.username === username);
+    const saved = localStorage.getItem(PROFILE_KEY);
+    if (saved) {
+      const parsed: ProfileData = JSON.parse(saved);
       if (found) {
-        const seeded: ProfileData = {
-          fullName:     `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim() || DEFAULT_PROFILE.fullName,
-          email:        found.email      ?? DEFAULT_PROFILE.email,
-          employeeId:   found.employeeId ?? DEFAULT_PROFILE.employeeId,
-          department:   found.department ?? DEFAULT_PROFILE.department,
-          role:         DEFAULT_PROFILE.role,
-          profilePhoto: found.profilePhoto ?? null,
-        };
-        localStorage.setItem(PROFILE_KEY, JSON.stringify(seeded));
-        return seeded;
+        if (!parsed.username) parsed.username = found.username ?? loggedInUsername;
+        if (!parsed.gender)   parsed.gender   = found.gender   ?? '';
+        if (!parsed.birthday) parsed.birthday = found.birthday ?? '';
       }
+      return parsed;
+    }
+
+    if (found) {
+      const seeded: ProfileData = {
+        fullName:     `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim() || DEFAULT_PROFILE.fullName,
+        username:     found.username     ?? loggedInUsername,
+        email:        found.email        ?? DEFAULT_PROFILE.email,
+        gender:       found.gender       ?? '',
+        birthday:     found.birthday     ?? '',
+        employeeId:   found.employeeId   ?? DEFAULT_PROFILE.employeeId,
+        department:   found.department   ?? DEFAULT_PROFILE.department,
+        role:         found.role         ?? DEFAULT_PROFILE.role,
+        profilePhoto: found.profilePhoto ?? null,
+      };
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(seeded));
+      return seeded;
     }
   } catch (e) { console.error('Profile load error:', e); }
   return { ...DEFAULT_PROFILE };
 };
 
 // ── Change Password Modal ─────────────────────────────────────────────────────
-interface ChangePasswordModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+interface ChangePasswordModalProps { isOpen: boolean; onClose: () => void; }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
-  const [currentPassword, setCurrentPassword]   = useState('');
-  const [newPassword, setNewPassword]           = useState('');
-  const [confirmPassword, setConfirmPassword]   = useState('');
-  const [showCurrent, setShowCurrent]           = useState(false);
-  const [showNew, setShowNew]                   = useState(false);
-  const [showConfirm, setShowConfirm]           = useState(false);
-  const [error, setError]                       = useState('');
-  const [success, setSuccess]                   = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword]         = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent]         = useState(false);
+  const [showNew, setShowNew]                 = useState(false);
+  const [showConfirm, setShowConfirm]         = useState(false);
+  const [error, setError]                     = useState('');
+  const [success, setSuccess]                 = useState(false);
 
-  // Reset state when modal opens
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
       setShowCurrent(false); setShowNew(false); setShowConfirm(false);
@@ -82,66 +92,30 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
 
   const handleSubmit = () => {
     setError('');
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('Please fill in all fields.'); return;
-    }
-
+    if (!currentPassword || !newPassword || !confirmPassword) { setError('Please fill in all fields.'); return; }
     const username = localStorage.getItem('loggedInUsername');
     const users: any[] = JSON.parse(localStorage.getItem('users') || '[]');
     const userIndex = users.findIndex(u => u.username === username);
-
     if (userIndex === -1) { setError('User not found.'); return; }
-
-    const storedPassword = users[userIndex].password ?? '';
-    if (storedPassword !== currentPassword) {
-      setError('Current password is incorrect.'); return;
-    }
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters.'); return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError('New passwords do not match.'); return;
-    }
-    if (newPassword === currentPassword) {
-      setError('New password must be different from current password.'); return;
-    }
-
+    if (users[userIndex].password !== currentPassword) { setError('Current password is incorrect.'); return; }
+    if (newPassword.length < 6) { setError('New password must be at least 6 characters.'); return; }
+    if (newPassword !== confirmPassword) { setError('New passwords do not match.'); return; }
+    if (newPassword === currentPassword) { setError('New password must be different from current password.'); return; }
     users[userIndex].password = newPassword;
     localStorage.setItem('users', JSON.stringify(users));
-
     try {
       const cu = localStorage.getItem('currentUser');
-      if (cu) {
-        const parsed = JSON.parse(cu);
-        parsed.password = newPassword;
-        localStorage.setItem('currentUser', JSON.stringify(parsed));
-      }
+      if (cu) { const p = JSON.parse(cu); p.password = newPassword; localStorage.setItem('currentUser', JSON.stringify(p)); }
     } catch (_) {}
-
     setSuccess(true);
-    setTimeout(() => { onClose(); }, 1800);
+    setTimeout(onClose, 1800);
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0 20px',
-    }}>
-      <div style={{
-        background: '#fff', borderRadius: 20, padding: '28px 24px',
-        width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-      }}>
-        {/* Header */}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 22 }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 12,
-            background: 'linear-gradient(135deg, #5f0076, #9e00c2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginRight: 12,
-          }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg,#5f0076,#9e00c2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
             <IonIcon icon={lockClosedOutline} style={{ color: '#fff', fontSize: 20 }} />
           </div>
           <div>
@@ -149,8 +123,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             <p style={{ margin: 0, fontSize: 12, color: '#9e92ab' }}>Keep your account secure</p>
           </div>
         </div>
-
-        {/* Fields */}
         {[
           { label: 'Current Password', val: currentPassword, set: setCurrentPassword, show: showCurrent, toggle: () => setShowCurrent(p => !p) },
           { label: 'New Password',     val: newPassword,     set: setNewPassword,     show: showNew,     toggle: () => setShowNew(p => !p)     },
@@ -158,77 +130,46 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
         ].map((field, i) => (
           <div key={i} style={{ marginBottom: 14 }}>
             <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 600, color: '#6b5f77' }}>{field.label}</p>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              border: '1.5px solid #e4dcea', borderRadius: 12,
-              padding: '0 14px', background: '#f7f5f9',
-            }}>
-              <input
-                type={field.show ? 'text' : 'password'}
-                value={field.val}
-                onChange={e => field.set(e.target.value)}
-                placeholder="••••••••"
-                style={{
-                  flex: 1, border: 'none', background: 'transparent',
-                  padding: '12px 0', fontSize: 14, outline: 'none', color: '#1a1a2e',
-                }}
-              />
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e4dcea', borderRadius: 12, padding: '0 14px', background: '#f7f5f9' }}>
+              <input type={field.show ? 'text' : 'password'} value={field.val} onChange={e => field.set(e.target.value)} placeholder="••••••••"
+                style={{ flex: 1, border: 'none', background: 'transparent', padding: '12px 0', fontSize: 14, outline: 'none', color: '#1a1a2e' }} />
               <button onClick={field.toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <IonIcon icon={field.show ? eyeOffOutline : eyeOutline} style={{ color: '#aaa', fontSize: 18 }} />
               </button>
             </div>
           </div>
         ))}
-
-        {/* Error / Success */}
-        {error && (
-          <div style={{
-            background: '#fff0f0', border: '1px solid #ffc0c0', borderRadius: 10,
-            padding: '10px 14px', marginBottom: 14,
-          }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#d32f2f' }}>{error}</p>
-          </div>
-        )}
-        {success && (
-          <div style={{
-            background: '#f0fff4', border: '1px solid #a0e0b0', borderRadius: 10,
-            padding: '10px 14px', marginBottom: 14,
-          }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#2e7d32' }}>✓ Password updated successfully!</p>
-          </div>
-        )}
-
-        {/* Actions */}
+        {error   && <div style={{ background: '#fff0f0', border: '1px solid #ffc0c0', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}><p style={{ margin: 0, fontSize: 13, color: '#d32f2f' }}>{error}</p></div>}
+        {success && <div style={{ background: '#f0fff4', border: '1px solid #a0e0b0', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}><p style={{ margin: 0, fontSize: 13, color: '#2e7d32' }}>✓ Password updated successfully!</p></div>}
         <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-          <button onClick={onClose} style={{
-            flex: 1, padding: '13px 0', borderRadius: 12,
-            border: '1.5px solid #e4dcea', background: '#f7f5f9',
-            fontSize: 14, fontWeight: 600, color: '#6b5f77', cursor: 'pointer',
-          }}>
-            Cancel
-          </button>
-          <button onClick={handleSubmit} style={{
-            flex: 1, padding: '13px 0', borderRadius: 12,
-            border: 'none', background: 'linear-gradient(135deg, #5f0076, #9e00c2)',
-            fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer',
-          }}>
-            Update
-          </button>
+          <button onClick={onClose}      style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: '1.5px solid #e4dcea', background: '#f7f5f9', fontSize: 14, fontWeight: 600, color: '#6b5f77', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={handleSubmit} style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#5f0076,#9e00c2)', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>Update</button>
         </div>
       </div>
     </div>
   );
 };
 
+// ── Main Profile Page ─────────────────────────────────────────────────────────
 const Profile: React.FC = () => {
   const history = useHistory();
-  const [showLogoutModal, setShowLogoutModal]         = useState(false);
-  const [isLoggingOut, setIsLoggingOut]               = useState(false);
-  const [profile, setProfile]                         = useState<ProfileData>(loadProfile);
-  const [showChangePassword, setShowChangePassword]   = useState(false);
-  const [showTermsModal, setShowTermsModal]           = useState(false);
+  const [showLogoutModal, setShowLogoutModal]       = useState(false);
+  const [isLoggingOut, setIsLoggingOut]             = useState(false);
+  const [profile, setProfile]                       = useState<ProfileData>(loadProfile);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTermsModal, setShowTermsModal]         = useState(false);
 
-  useEffect(() => { setProfile(loadProfile()); }, []);
+  useIonViewWillEnter(() => {
+    setProfile(loadProfile());
+  });
+
+  const formatBirthday = (val: string) => {
+    if (!val) return '—';
+    try {
+      const [y, m, d] = val.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch { return val; }
+  };
 
   const stats = [
     { val: '3',   lbl: 'Years Exp.' },
@@ -238,27 +179,18 @@ const Profile: React.FC = () => {
   ];
 
   const infoItems = [
-    { icon: personCircleOutline, label: 'Full Name',   value: profile.fullName   },
-    { icon: mailOutline,         label: 'Email',       value: profile.email      },
-    { icon: businessOutline,     label: 'Employee ID', value: profile.employeeId },
-    { icon: settingsOutline,     label: 'Role',        value: profile.role       },
+    { icon: personCircleOutline, label: 'Full Name',   value: profile.fullName                 },
+    { icon: personOutline,       label: 'Username',    value: profile.username   || '—'        },
+    { icon: mailOutline,         label: 'Email',       value: profile.email                    },
+    { icon: transgenderOutline,  label: 'Gender',      value: profile.gender     || '—'        },
+    { icon: calendarOutline,     label: 'Birthday',    value: formatBirthday(profile.birthday) },
+    { icon: businessOutline,     label: 'Employee ID', value: profile.employeeId               },
+    { icon: settingsOutline,     label: 'Role',        value: profile.role                     },
   ];
 
   const menuItems = [
-    {
-      icon: lockClosedOutline,
-      title: 'Change Password',
-      sub: 'Update your account password',
-      action: 'Change',
-      onPress: () => setShowChangePassword(true),
-    },
-    {
-      icon: documentTextOutline,
-      title: 'Terms of Service',
-      sub: 'Read our policies',
-      action: 'View',
-      onPress: () => setShowTermsModal(true),
-    },
+    { icon: lockClosedOutline,   title: 'Change Password', sub: 'Update your account password', action: 'Change', onPress: () => setShowChangePassword(true) },
+    { icon: documentTextOutline, title: 'Terms of Service', sub: 'Read our policies',           action: 'View',   onPress: () => setShowTermsModal(true)      },
   ];
 
   const handleLogoutConfirm  = () => { setIsLoggingOut(true); };
@@ -266,6 +198,7 @@ const Profile: React.FC = () => {
   const handleLogoutComplete = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('loggedInUsername');
   };
 
   return (
@@ -283,9 +216,7 @@ const Profile: React.FC = () => {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} />
                 </div>
               ) : (
-                <div className="sv-profile-av">
-                  <IonIcon icon={personCircleOutline} />
-                </div>
+                <div className="sv-profile-av"><IonIcon icon={personCircleOutline} /></div>
               )}
               <button className="sv-profile-av-edit" onClick={() => history.push('/edit-profile')}>
                 <IonIcon icon={cameraOutline} />
@@ -293,7 +224,7 @@ const Profile: React.FC = () => {
             </div>
             <p className="sv-profile-name">{profile.fullName}</p>
             <p className="sv-profile-role">{profile.role}</p>
-            <span className="sv-profile-dept-badge">{profile.department}</span>
+            <span className="sv-profile-dept-badge">{profile.department}</span><br />
             <div className="sv-profile-active-row">
               <span className="sv-profile-active-dot" /> Active Supervisor
             </div>
@@ -379,18 +310,13 @@ const Profile: React.FC = () => {
         onComplete={handleLogoutComplete}
       />
 
-      {/* Change Password Modal */}
       <ChangePasswordModal
         isOpen={showChangePassword}
         onClose={() => setShowChangePassword(false)}
       />
 
-      {/* Terms of Service Modal */}
       {showTermsModal && (
-        <TermsModal
-          mode="view"
-          onClose={() => setShowTermsModal(false)}
-        />
+        <TermsModal mode="view" onClose={() => setShowTermsModal(false)} />
       )}
     </IonPage>
   );
